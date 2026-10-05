@@ -1,5 +1,23 @@
 # ZERO MARKET LAB
 
+## STEP 4 현재 구현
+
+Case #01의 세 전략을 같은 S&P500 Price Index 데이터와 같은 실행 가정으로 비교한다.
+
+- Strategy A: 매월 첫 시장 관측일에 500,000 simulation units를 납입하고 종가에 전액 매수한다.
+- Strategy B: 기존 보유분의 평균매입가 대비 종가가 5% 이상이면 전량 매도하고 같은 날 같은 종가에 전액 재진입한다.
+- Strategy C: 같은 익절 조건으로 전량 매도한 뒤 달력상 1개월 후 기준일의 첫 시장 관측일에 누적 현금 전액으로 재진입한다.
+
+비용과 slippage는 0, fractional units는 허용하며 FX와 배당은 반영하지 않는다. A와 B는 이 가정 아래 일별
+portfolio value, quantity, cash가 같아야 한다. C는 현금 대기 때문에 경로가 달라질 수 있다.
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_case01_comparison.py
+```
+
+결과는 `artifacts/step_04/<run-id>/`에 summary JSON, 전략별 state/event Parquet, Plotly HTML, PNG로 저장된다.
+현재 단계는 전략 실행 규칙과 회계 불변식 검증까지이며, 성과 우월성 결론이나 STEP 5 기능은 포함하지 않는다.
+
 실제 과거 시장데이터로 투자 가설을 검증·반증하는 Interactive Backtest Research Lab.
 목적은 자동매매 수익률 극대화가 아니라, 같은 시장환경에서 전략의 차이가 발생한 이유를 이해하는 것이다.
 

@@ -1,5 +1,22 @@
 # Architecture baseline — STEP 0
 
+## STEP 4 전략 상태와 실행 경계
+
+`run_case01_strategy`는 공통 일별 회계 흐름을 담당하고 A/B/C 전략 객체는 익절 사용 여부와
+`INVESTED` / `WAITING_REENTRY` 상태, 매도일, 재진입 기준일을 보유한다. `run_case01_comparison`은 동일한
+검증 완료 market frame으로 세 전략을 각각 실행해 결과 객체를 분리한다. 기존
+`run_monthly_buy_and_hold` public API는 Strategy A로 위임해 호환성을 유지한다.
+
+Portfolio는 contribution, fractional buy, weighted average cost 외에 `sell_all`을 제공한다. 전량 매도는
+수량을 0으로 만들고 평균매입가를 null로 재설정하며, 이후 재진입은 새 종가를 평균매입가로 설정한다.
+Daily State에는 strategy name/state와 reentry target date가 추가되며, Event Log는 CONTRIBUTION, BUY,
+TAKE_PROFIT, SELL, REENTRY를 독립된 순서형 행으로 보존한다.
+
+same-close, 비용 0 조건에서 B의 매도와 재진입은 자산가치와 수량을 바꾸지 않는다. 따라서 A/B의 모든
+일별 portfolio value, quantity, cash 동일성은 구현 검증 불변식이다. C는 달력 월 연산 후 첫 시장 관측일을
+선택하며, 대기 중 contribution은 현금으로 누적된다. Cash Waiting Days는 달력 일수로 집계하고 열린 대기는
+마지막 관측일까지 별도로 포함한다.
+
 ## Decisions
 
 | ADR | 기준선 결정 |

@@ -37,3 +37,13 @@ class Portfolio:
             raise ValueError("Market price must be finite and > 0")
         position_value = self.quantity * market_price
         return position_value, self.cash + position_value
+
+    def sell_all(self, price: float) -> tuple[float, float]:
+        if not math.isfinite(price) or price <= 0:
+            raise ValueError("Sell price must be finite and > 0")
+        sold_quantity = self.quantity
+        proceeds = sold_quantity * price
+        self.cash += proceeds
+        self.quantity = 0.0
+        self.average_purchase_price = None
+        return sold_quantity, proceeds

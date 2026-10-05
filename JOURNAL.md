@@ -301,3 +301,42 @@ CONTRIBUTION 120, BUY 120, SELL 0, 최종 contribution 60,000, cash 0으로 모�
 - DoD: **PASS**. 모든 요구 scenario, tolerance 정책, accounting invariants,
   기존 포함 58 tests, dependency/diff 검사, JOURNAL, commit/push 완료.
 - 이 종료 기록은 별도 docs commit으로 보존한다. STEP 4는 시작하지 않았으며 사용자 검토 대기다.
+
+## 2026-10-05 — STEP 4 Three Strategy Comparison
+
+### 범위와 구현
+
+- 시작 시 main/origin HEAD `1258ba87ea1740575663b7dfb4e83901d55e9f3c`, working tree clean을 확인했다.
+- Case #01 Strategy A/B/C를 하나의 일별 엔진과 명시적 `INVESTED` / `WAITING_REENTRY` 상태로 구현했다.
+- B는 +5% 익절 시 전량 매도 후 같은 거래일·같은 종가로 전액 재진입한다.
+- C는 전량 매도 후 달력상 1개월 뒤 기준일 당일 또는 이후 첫 시장 관측일에 누적 현금 전액으로 재진입한다.
+  월말은 calendar clamp를 사용하며 데이터가 먼저 끝나면 현금과 대기 상태를 유지한다.
+- 이벤트는 CONTRIBUTION, BUY, TAKE_PROFIT, SELL, REENTRY로 분리했고 일중 순서를 보존했다.
+- 비용/slippage 0, fractional units, same close, FX OFF, dividend excluded 범위만 다뤘다.
+
+### 검증과 수정
+
+- STEP 4 합성 테스트 11개가 event order, contribution timing, B 동일성, C 한 달 대기와 월말 clamp,
+  재진입일 적립금, 열린 대기를 검증했다. 전체 **69 tests PASS**, `pip check` PASS.
+- 첫 테스트 실행에서 월말 clamp parameter case 3개가 실패했다. 기준일 이후 첫 관측일이 해당 월의 첫
+  관측일이기도 하므로 CONTRIBUTION 다음 REENTRY가 맞았고, production code가 아니라 fixture 기대값을 수정했다.
+- 실제 실행 스크립트는 A/B의 일별 portfolio value, quantity, cash를 `1e-12` relative / `1e-9` absolute
+  tolerance로 검증한 뒤에만 artifact를 생성한다.
+
+### 실제 데이터 실행과 시각 검증
+
+- 입력 snapshot `20261005T034500658318Z`, 2016-10-03~2026-10-02, 2,514 market rows,
+  월 500,000, 총 납입 60,500,000.
+- A: 최종 126,860,380.39809549, BUY 121, SELL/TAKE_PROFIT/REENTRY 0.
+- B: 최종 126,860,380.39809549, BUY+REENTRY 142, SELL/TAKE_PROFIT/REENTRY 각 25.
+- C: 최종 116,066,042.95602758, BUY+REENTRY 117, SELL/TAKE_PROFIT/REENTRY 각 24,
+  Cash Waiting Days 754.
+- artifact: `artifacts/step_04/20261005T071836772115Z/`의 summary, 전략별 state/event Parquet,
+  Plotly HTML, PNG. PNG에서 A/B 선의 정확한 중첩과 C의 분리, 날짜 증가 방향, 비어 있지 않은 세 series,
+  제목·축·범례를 확인했다.
+- 이 실행은 성과 우월성 결론이 아니다. 배당, 비용, 세금, FX, 실제 ETF, 다른 임계값과 구간은 후속 범위다.
+
+### Git gate
+
+기능·테스트·문서 diff와 공백 오류를 확인한 뒤 `feat: implement case 01 multi-strategy comparison`으로
+commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기록에 남긴다. STEP 5는 시작하지 않는다.

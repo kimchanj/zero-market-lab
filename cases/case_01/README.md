@@ -1,5 +1,37 @@
 # Case #01 — Monthly S&P500 Accumulation vs Take Profit
 
+## STEP 4 실행 명세와 관측 결과
+
+동일한 2016-10-03~2026-10-02 S&P500 Price Index daily close 2,514건과 월 500,000
+simulation units를 사용해 A/B/C를 실행했다. Price Index이므로 배당은 제외되며 FX OFF, 비용 0,
+slippage 0, fractional units, same-close 체결을 적용했다.
+
+하루의 처리 순서는 날짜 확인 → 월 적립 → C 재진입 가능 여부 확인 → 기존 보유분의 익절 조건 확인 →
+전량 매도 → B 즉시 재진입 또는 C 대기 전환 → 익절이 없고 투자 상태이면 가용 현금 매수 → 일말 상태 기록이다.
+익절 조건은 당일 적립금 매수 전의 기존 보유 수량과 평균매입가에 적용한다. CONTRIBUTION, BUY,
+TAKE_PROFIT, SELL, REENTRY는 발생 순서대로 서로 다른 event row로 기록한다.
+
+- A `A_MONTHLY_BUY_AND_HOLD`: 매도 없이 월 적립금을 종가에 매수한다.
+- B `B_IMMEDIATE_REENTRY`: 종가가 평균매입가의 105% 이상이면 전량 매도하고 같은 거래일의 같은 종가에
+  비용 차감 없이 전액 재진입한다. 재진입 직후 평균매입가는 그 종가로 재설정된다.
+- C `C_DELAYED_REENTRY`: 같은 조건에서 전량 매도하고 `sell_date + DateOffset(months=1)`을 기준일로 삼는다.
+  월말이 없는 경우 pandas calendar month clamp를 사용한다(예: 1월 31일 → 2월 말일). 기준일 당일 또는
+  그 이후의 첫 시장 관측일에 대기 중 적립금을 포함한 전액을 재진입한다. 데이터가 먼저 끝나면 현금과
+  WAITING_REENTRY 상태를 유지한다.
+
+Cash Waiting Days는 매도일부터 재진입일까지의 달력 일수다. 종료일까지 재진입하지 못한 열린 대기는
+마지막 시장 관측일까지의 달력 일수를 포함해 별도로 추적한다.
+
+실제 실행에서 A/B의 일별 portfolio value, quantity, cash는 허용오차 내 완전 일치했다. A와 B의 최종 가치는
+126,860,380.39809549, 누적 납입액은 60,500,000이었다. B는 TAKE_PROFIT/SELL/REENTRY가 각각 25회였고
+평균매입가 이력만 A와 달랐다. C의 최종 가치는 116,066,042.95602758, TAKE_PROFIT/SELL/REENTRY가 각각
+24회, Cash Waiting Days는 754일이었다. 이 값은 특정 기간의 관측 결과이며 C의 열위나 A/B의 우월성을
+일반화하지 않는다. 배당, 비용, 세금, FX, 실제 ETF 체결, 다양한 임계값과 시장 구간은 아직 검증하지 않았다.
+
+합성 테스트는 event order, B의 동일성 불변식, 월 적립일 익절, C의 정확한 한 달 대기, 월말 clamp,
+재진입일 적립금 선반영, 데이터 종료 전 미재진입을 검증한다. 전체 테스트 69개와 실제 실행 및 PNG 시각
+검증이 통과했다. 차트에서 A의 굵은 실선과 B의 점선이 겹치고 C 경로가 대기 구간에서 분리됨을 확인했다.
+
 ## Problem / Hypothesis
 
 월 적립식 S&P500 장기투자에서 반복 익절·재진입은 Buy & Hold보다 어떤 환경에서 유리하거나 불리한가?
