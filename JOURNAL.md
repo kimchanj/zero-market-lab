@@ -42,3 +42,29 @@ STEP 0 사용자 검토 대기. STEP 1은 아직 시작하지 않았다.
 - 사용자에게 작성자 이름·이메일을 요청했다. 임의 작성자나 전역 설정을 만들지 않는다.
 - STEP 0 DoD: PARTIAL. 문서 작업 완료, Git commit과 이후 clean 상태 확인 대기.
 - STEP 1 미실행. 작성자 정보 수신 후 저장소 로컬 설정, commit, 상태 확인 및 기록 갱신 필요.
+
+## 2026-10-05 — STEP 0 종료
+
+이 종료 기록이 위 최초 검토의 PARTIAL 및 commit 대기 상태를 대체한다.
+
+- STEP 0 문서화 완료: Project Charter, ADR-001~014, Architecture, Data Strategy,
+  Case #01, Roadmap을 기준선으로 확정했다.
+- Git author를 현재 저장소 local 설정에만 적용하고 `git config --local --get`으로 확인했다.
+  user.name: `kimchanj`; user.email: `101384886+kimchanj@users.noreply.github.com`.
+  global 설정은 변경하지 않았다.
+- 문서 6개 및 전체 staged diff를 재검토했다. 공백 검사 통과, 소스코드·UI·설치 파일 없음.
+- Strategy B: 종가가 평균매입가 대비 +5% 이상이면 전량 매도 후 같은 거래일 같은 종가에 재매수.
+- Strategy C: 다음 달 같은 일자를 기준일로 삼고 해당 일자가 없으면 월말로 제한한다.
+  기준일을 포함하여 그 이후 첫 거래일에 재진입한다. 예: 1/31 → 2/28(윤년 2/29),
+  해당 일이 거래일이면 당일, 휴장이면 다음 거래일. 기존 Case 정의를 확인했으며 변경하지 않았다.
+- CAGR·MDD의 현금 유입 해석 주의, cash-flow adjusted return 및 향후 XIRR/MWR가
+  이미 Case 문서에 명시되어 있어 수정하지 않았다.
+- Roadmap에는 체크 상태가 최초 commit 전 기록이며 최종 판정은 이 JOURNAL을 따른다는 설명만 추가했다.
+- Git 첫 commit 성공:
+  `docs: establish ZERO MARKET LAB step 0 foundation`
+  — `e6f6735b094981f81f8468b95d194286c73b8680`.
+- 첫 commit 직후 `git status --short` 출력 없음: working tree clean 확인.
+- 실행 기능이 없어 기능 테스트·앱 실행·화면 검증은 N/A. 문서와 Git 검증으로 종료한다.
+- STEP 0 종료 판정: PASS / COMPLETE. 이 종료 기록은 JOURNAL만 별도 commit으로 보존한다.
+- 다음 단계는 STEP 1(실제 데이터 공급자·환경·로딩·검증·raw chart)이며 아직 시작하지 않았다.
+  사용자 시작 지시 전에는 진행하지 않는다.
