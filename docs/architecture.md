@@ -103,11 +103,22 @@ Regime Dependence, Publication / Crowding Effect를 기록한다. 원 결과를 
 Case #01의 A/B/C는 변경하지 않는다. Reference Strategy는 Case #01 이후 별도 Case 또는
 Reference Comparison Case에서 추가하며 실제 번호는 사전에 고정하지 않는다.
 
-## 향후 데이터 계약 (구현 없음)
+## STEP 2 구현 경계 — Strategy A
 
-Daily state: date, market_price, cash, quantity, position_value, portfolio_value,
-total_contribution, average_purchase_price, strategy_name, action, buy_amount,
-sell_amount, transaction_cost, drawdown.
+최초 구현 수직 슬라이스는 `MonthlyContributionPolicy → BuyAndHoldStrategy → Portfolio → Engine`이다.
+Contribution Policy는 입력 데이터에서 각 year-month의 첫 관측일과 현금 유입액만 결정한다.
+Strategy는 가용 현금을 매수할 의도만 반환한다. Portfolio는 contribution, fractional buy,
+weighted average cost와 일별 평가를 담당한다. Engine은 검증된 날짜 순회, 호출 순서와 state/event 기록만 조정한다.
+
+Daily State와 Event Log는 별도 DataFrame이며 CONTRIBUTION과 BUY도 별도 행이다.
+현재 Engine은 Strategy A 전용 진입점이지만 +5%·SELL·Reentry 규칙을 포함하지 않는다.
+Same Close, 비용 0, slippage 0은 이번 검증 기준선이며 일반 Execution Model 구현으로 간주하지 않는다.
+
+## 데이터 계약
+
+STEP 2 구현 state: date, market_price, cash, quantity, average_purchase_price,
+position_value, portfolio_value, total_contribution. 향후 strategy_name, action, buy/sell amount,
+transaction_cost, drawdown 등은 필요 단계에서 확장한다.
 
 position_value = quantity × market_price; portfolio_value = cash + position_value.
 무차입 기준 cash·quantity는 허용 오차 이내에서 음수가 아니어야 한다.

@@ -172,3 +172,60 @@ commit 전 변경 파일/공백/diff를 검토하고 데이터 제외 여부를 
   Portfolio Backtest, 비교 실행은 구현하지 않았다.
 - 변경 범위는 README.md, docs/architecture.md, docs/roadmap.md, JOURNAL.md 네 문서뿐이다.
 - STEP 1은 이미 PASS/종료 상태이며 STEP 2도 시작하지 않았다.
+
+## 2026-10-05 — STEP 2 Monthly Buy & Hold Baseline
+
+### 시작 상태와 범위
+
+- main HEAD `aa4278ee39df639aa639ae83746bc351b2cf4e26`, origin/main과 일치, working tree clean.
+- Strategy A만 구현했다. B/C, SELL, Take Profit, Reentry, 비용·slippage 모델,
+  CAGR/MDD/Volatility, Dash, FX, Macro, Reference Strategy는 구현하지 않았다.
+- STEP 1의 `date`, `close` Parquet와 validator를 그대로 재사용했다.
+
+### 설계와 회계 규칙
+
+- `MonthlyContributionPolicy`: 각 year-month에 입력으로 존재하는 첫 market date와 적립액 결정.
+- `BuyAndHoldStrategy`: 가용 cash 매수 의도만 제공. Contribution timing과 분리.
+- `Portfolio`: cash, fractional quantity, weighted average purchase price,
+  total contribution 및 `quantity × market price` 평가를 담당.
+- `Engine`: 입력 검증, 날짜 순회, contribution → BUY → daily valuation 순서와
+  별도 Daily State / Event Log 기록을 조정.
+- 월 적립 500,000 simulation units, FX OFF, cost/slippage 0, same close, fractional units 허용.
+  S&P500 지수의 Benchmark Simulation이며 거래 가능한 상품 결과가 아니다.
+
+### Synthetic verification
+
+Fixture: 2026-01-02 100, 2026-01-05 110, 2026-02-02 125; 월 적립 100.
+
+- 1/2: contribution 100, buy 1.0, quantity 1.0, cash 0, portfolio 100.
+- 1/5: quantity 1.0 유지, portfolio 110, 이벤트 없음.
+- 2/2: contribution 100, buy 0.8, quantity 1.8, cash 0, portfolio 225,
+  weighted average cost `200 / 1.8 = 111.111...`.
+- 신규 테스트 13개를 포함해 전체 **42 passed**. 기존 STEP 1 테스트도 모두 통과.
+- 날짜 역순·중복·비양수 가격, 잘못된 적립금은 실패한다. SELL 이벤트가 없음을 검증했다.
+
+### 실제 데이터 실행과 불변식
+
+- 입력: `data/processed/20261005T034500658318Z/sp500_price_daily.parquet`.
+- 기간 2016-10-03~2026-10-02, market rows 2,514.
+- contribution 121회, BUY 121회, SELL 0회.
+- total contribution 60,500,000; final quantity 16,426.904043924354.
+- final average purchase price 3,682.9824925151684; final market price 7,722.72.
+- final cash 0; final position/portfolio value 126,860,380.39809549.
+- investment gain 66,360,380.39809549. CAGR이나 전략 우월성으로 해석하지 않는다.
+- 전체 실제 state에서 cash/quantity 비음수, valuation 항등식, contribution 단조 증가,
+  state row 수, 월별 첫 관측일과 event 수를 별도 재검증해 모두 PASS.
+
+### Visual verification / 제한
+
+- 최종 run `artifacts/step_02/20261005T041738204102Z/`에 summary, states, events,
+  Plotly HTML 및 Kaleido PNG를 생성했다.
+- PNG를 직접 검사해 Portfolio Value와 Total Contribution 두 선, 2016~2026 날짜 방향,
+  월 적립 계단, 주요 하락 구간, FX OFF / Fractional Units / Cost 0 / Dividend Excluded 표기를 확인했다.
+- Price Return만 사용하고 배당·FX·현금이자·세금·실제 체결 가능성은 반영하지 않는다.
+  same-close fractional execution과 0 비용은 회계 검증용 가정이다.
+
+### Git gate
+
+전체 테스트, dependency 검사, diff·공백·파일 범위를 검토한 후 기능 commit과 origin/main push를 수행한다.
+STEP 3는 시작하지 않았다.
