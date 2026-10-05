@@ -229,3 +229,12 @@ Fixture: 2026-01-02 100, 2026-01-05 110, 2026-02-02 125; 월 적립 100.
 
 전체 테스트, dependency 검사, diff·공백·파일 범위를 검토한 후 기능 commit과 origin/main push를 수행한다.
 STEP 3는 시작하지 않았다.
+
+### STEP 2 종료 기록
+
+- 기능 commit `9d7f3aa2d245ee56e8d1674866668e36fc1f1d5f`
+  (`feat: implement monthly buy and hold baseline`) 생성 및 origin/main push 성공.
+- push 직후 `git ls-remote`의 main hash와 로컬 HEAD가 일치했고 working tree 변경은 없었다.
+- DoD: **PASS**. Monthly Contribution, first market date, cash/quantity/average cost,
+  Strategy A, state/event, synthetic/real 검증, 42 tests, 시각 검증, 문서, diff, commit/push 완료.
+- 이 종료 기록은 별도 docs commit으로 보존한다. STEP 3는 시작하지 않았으며 사용자 검토 대기다.
