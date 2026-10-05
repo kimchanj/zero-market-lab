@@ -238,3 +238,57 @@ STEP 3는 시작하지 않았다.
 - DoD: **PASS**. Monthly Contribution, first market date, cash/quantity/average cost,
   Strategy A, state/event, synthetic/real 검증, 42 tests, 시각 검증, 문서, diff, commit/push 완료.
 - 이 종료 기록은 별도 docs commit으로 보존한다. STEP 3는 시작하지 않았으며 사용자 검토 대기다.
+
+## 2026-10-05 — STEP 3 Synthetic Engine Verification
+
+### 시작 상태 / 범위
+
+- main HEAD `0524bb91dd61ebc797889de042d9af6c95f957f5`, origin/main과 일치, working tree clean.
+- STEP 2의 public API와 Market Data validator를 변경하지 않고 deterministic synthetic test만 추가했다.
+- Strategy B/C, SELL, Reentry, 비용, 성과지표, UI 등 신규 투자기능은 구현하지 않았다.
+
+### 검증 결과
+
+| Scenario | Result |
+| --- | --- |
+| Month boundary | PASS |
+| Year boundary | PASS |
+| Missing calendar day 1 | PASS |
+| Single-observation month | PASS |
+| CONTRIBUTION → BUY → end-state order | PASS |
+| Price spike | PASS |
+| Price crash | PASS |
+| Multi-month weighted average cost | PASS |
+| Non-contribution-day state preservation | PASS |
+| 10-year deterministic run | PASS |
+| Repeated-run determinism | PASS |
+| Empty dataset rejected | PASS |
+| Duplicate date rejected | PASS |
+| Unsorted date rejected | PASS |
+| Null close rejected | PASS |
+| Zero price rejected | PASS |
+| Negative price rejected | PASS |
+
+급등락 fixture `100 → 200 → 50`은 quantity 1, average cost 100, contribution 100을 유지하고
+portfolio value만 `100 → 200 → 50`으로 바뀌었다. 월별 가격 `100, 200, 50`에서는
+quantity `1, 1.5, 3.5`, average cost `100, 133.333333..., 85.714285...`로 손계산값과 일치했다.
+
+10년 business-day fixture는 2,609행, 120개월이었다. Daily State 2,609행,
+CONTRIBUTION 120, BUY 120, SELL 0, 최종 contribution 60,000, cash 0으로 모든 불변식을 유지했다.
+같은 3년 입력과 config를 두 번 실행한 state/event/final row는 exact equality로 일치했다.
+
+### 정책 / 결론 / 한계
+
+- Fractional quantity, 평균원가와 valuation 비교는 전체 STEP 3에서
+  relative tolerance `1e-12`, absolute tolerance `1e-9`를 공통 적용했다.
+- 검증 불변식: cash/quantity 비음수, position/portfolio valuation 항등식,
+  contribution 단조 증가, represented months = contributions = buys, sells = 0,
+  state rows = market rows, contribution day event order.
+- 신규 16개를 포함한 전체 **58 tests PASS**, `pip check` PASS, `git diff --check` PASS.
+- 발견된 production bug는 없으며 production code 변경도 없다. silent sort/drop/fill 없이 invalid input을 거부했다.
+- deterministic fixture는 실제 시장·체결 모델이나 모든 floating-point 규모를 증명하지 않는다.
+  STEP 4 Multi Strategy Comparison은 시작하지 않았다.
+
+### Git gate
+
+테스트 파일과 JOURNAL만 검토·commit하고 origin/main에 push한 뒤 hash와 clean 상태를 종료 기록에 남긴다.
