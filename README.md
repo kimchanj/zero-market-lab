@@ -25,6 +25,11 @@ STEP 2는 사용자 검토와 `STEP 2 시작` 지시 후에만 진행한다.
 초기 연구는 S&P500 Benchmark 월 적립과 익절·재진입 A/B/C 비교다.
 실제 ETF 매매, KRW 수익률, 세금, 계좌, 다중자산은 후속 범위다.
 
+장기적으로 동일한 Research Engine에서 User Hypothesis Strategy, Published / Reference Strategy,
+Control / Benchmark를 같은 데이터와 Execution Assumption으로 비교한다. Reference Strategy Library는
+유명 전략을 정답으로 채택하는 목록이 아니라 출처·가설·데이터 요구사항·한계를 추적하고 재검증하기 위한 연구 카탈로그다.
+현재는 설계만 기록했으며 Trend Following, Momentum 등 Reference Strategy는 구현하지 않았다.
+
 ## 문서
 
 - [Architecture와 ADR](docs/architecture.md): 책임 경계, 기술스택, 상태와 이벤트 계약

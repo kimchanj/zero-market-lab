@@ -148,3 +148,27 @@ commit 전 변경 파일/공백/diff를 검토하고 데이터 제외 여부를 
 - DoD: **PASS**. 환경·최소 의존성·실데이터 raw/processed/provenance·validation·29 tests·
   실제 실행·사용자 제공 화면 검토·문서·diff·commit·push·clean 확인 완료.
 - 이 종료 기록은 별도 docs commit으로 보존한다. STEP 2는 시작하지 않았으며 사용자 검토 대기다.
+
+## 2026-10-05 — STEP 1 설계 보완: Reference Strategy Library
+
+### 목적과 결정
+
+- 완료된 STEP 1의 데이터 구현 범위는 변경하지 않고 장기 연구 확장 기준만 문서화했다.
+- 전략 출처를 User Hypothesis, Academic Reference, Practitioner Reference,
+  Control / Benchmark로 구분하는 Reference Strategy Library 개념을 Architecture에 추가했다.
+- Strategy ID, Name, Family, Source Type, Author/Organization, Reference/Publication,
+  Publication Date, Core Hypothesis, Required Market Data, Parameter Set, Benchmark,
+  Known Limitations, Evidence Type, ZERO MARKET LAB Status를 metadata 후보로 기록했다.
+- 초기 Family 후보와 Reference 전략의 동일 조건 재검증 원칙을 기록했다.
+  Published/과거/유명/Backtest 결과가 현재·미래·live edge를 보장하지 않는다고 명시했다.
+- OOS, Look-Ahead, Survivorship, 비용, Slippage, Data Snooping, Overfitting,
+  Regime Dependence, Publication/Crowding Effect를 필수 검토 대상으로 삼았다.
+
+### 범위 보호
+
+- Case #01 A/B/C 정의와 번호는 변경하지 않았다.
+- Roadmap 번호를 다시 매기지 않고 STEP 9 이후 또는 13+와 병렬인 Research Track으로 추가했다.
+- Reference Strategy 클래스, DB, Trend Following, Moving Average, Momentum,
+  Portfolio Backtest, 비교 실행은 구현하지 않았다.
+- 변경 범위는 README.md, docs/architecture.md, docs/roadmap.md, JOURNAL.md 네 문서뿐이다.
+- STEP 1은 이미 PASS/종료 상태이며 STEP 2도 시작하지 않았다.

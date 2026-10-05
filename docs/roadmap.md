@@ -21,6 +21,24 @@
 
 STEP 3은 검증 심화 단계이며 STEP 1/2의 테스트를 그때까지 유예한다는 뜻이 아니다.
 
+## Reference Strategy Research Track (Case #01 이후, 번호 미정)
+
+기존 STEP 번호와 Case #01 A/B/C는 유지한다. Reference Strategy 연구는 STEP 9 이후 또는
+13+와 병렬로 승인할 별도 Research Track이며, 지금 구현 순서를 확정하지 않는다.
+
+1. 학술·practitioner 원문과 버전, 사용조건을 조사한다.
+2. Strategy metadata와 원 규칙·데이터 요구사항·benchmark를 등록한다.
+3. 원 논문의 정보 이용 시점과 파라미터를 보존해 규칙을 재현한다.
+4. User Strategy / Published Strategy / Control을 동일 데이터와 execution 기준으로 실행한다.
+5. 원 발표 결과와 재현 결과의 차이를 데이터·기간·비용·규칙 차이로 분석한다.
+6. Transaction Cost / Slippage / 체결 지연을 반영한다.
+7. Out-of-Sample, 대체 기간·자산·파라미터 민감도와 국면별 robustness를 검증한다.
+8. Reproduced, Falsified, Inconclusive 등 결과와 반증 증거를 함께 기록한다.
+
+예시 비교는 Monthly Buy & Hold, +5% Immediate Reentry, +5% 1-Month Reentry,
+10-Month Moving Average, 12-Month Momentum이지만 마지막 두 전략은 현재 구현하지 않는다.
+Reference Strategy 구현은 별도의 사용자 시작 지시와 Case 설계·완료조건이 필요하다.
+
 ## 공통 게이트
 
 설계 → 구현 → 자동 테스트 → 실제 실행 → 화면 확인 → Git Commit → JOURNAL.
