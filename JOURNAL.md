@@ -340,3 +340,12 @@ CONTRIBUTION 120, BUY 120, SELL 0, 최종 contribution 60,000, cash 0으로 모�
 
 기능·테스트·문서 diff와 공백 오류를 확인한 뒤 `feat: implement case 01 multi-strategy comparison`으로
 commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기록에 남긴다. STEP 5는 시작하지 않는다.
+
+### STEP 4 종료 기록
+
+- Strategy A/B/C, A/B same-close control invariant, Strategy C waiting/reentry 구현과 검증을 완료했다.
+- 전체 69 tests, `pip check`, `git diff --check`, 실제 S&P500 비교 실행과 visual verification이 통과했다.
+- 기능 commit `c53aa8ce221a81e48a2b41c7b1acb6c8aa620881`
+  (`feat: implement case 01 multi-strategy comparison`)을 생성했다.
+- STEP 4 Definition of Done: **PASS / COMPLETE**.
+- STEP 5 Interactive Comparison UI는 시작하지 않았다.
