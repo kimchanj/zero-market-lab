@@ -292,3 +292,12 @@ CONTRIBUTION 120, BUY 120, SELL 0, 최종 contribution 60,000, cash 0으로 모�
 ### Git gate
 
 테스트 파일과 JOURNAL만 검토·commit하고 origin/main에 push한 뒤 hash와 clean 상태를 종료 기록에 남긴다.
+
+### STEP 3 종료 기록
+
+- Test commit `f093d68f842805e0d25e2b4ccbd88e090bcf5f50`
+  (`test: harden buy and hold engine with synthetic scenarios`) 생성 및 origin/main push 성공.
+- push 직후 `git ls-remote`의 main hash와 로컬 HEAD가 일치했고 staged/unstaged 변경은 없었다.
+- DoD: **PASS**. 모든 요구 scenario, tolerance 정책, accounting invariants,
+  기존 포함 58 tests, dependency/diff 검사, JOURNAL, commit/push 완료.
+- 이 종료 기록은 별도 docs commit으로 보존한다. STEP 4는 시작하지 않았으며 사용자 검토 대기다.
