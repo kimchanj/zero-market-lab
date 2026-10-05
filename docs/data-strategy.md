@@ -58,3 +58,59 @@ S&P500과 비교할 때 검증된 공통 데이터 기간을 사용한다.
 Cash/T-Bill, Short Treasury, US 10Y/30Y, Bond ETF; Gold, Commodity, Oil; USD, KRW, USD/KRW.
 Macro: FED Policy Rate, Treasury Yield, Inflation, Real Yield, Unemployment, GDP/Growth, USD, Oil.
 서로 다른 거래 달력·발표 빈도를 동일 Timeline에 표시하되 미공개 정보를 과거에 배치하지 않는다.
+
+## STEP 1 실행 — FRED Validation Provider
+
+2026-10-05 확인. 공급자 선택은 사용자 지시 및 공식 출처·명확한 PR 의미·접근 가능한 CSV에 근거한다.
+공식 graph CSV download를 requests로 호출하며 unofficial wrapper를 사용하지 않는다.
+이는 인증된 API의 가용성/SLA를 보장하지 않는 다운로드 경로다. 형식 변경 시 명시적 schema 오류로 중단한다.
+
+| 항목 | 실행 결과 |
+| --- | --- |
+| Snapshot | 20261005T034500658318Z |
+| 요청 | 2000-01-01~2026-10-02 (포함); 완료된 미국 거래일을 종료일로 선택 |
+| 실제 | 2016-10-03~2026-10-02 |
+| 행 수 | 원본 2,610 / 유효 종가 2,514 / 명시적 결측 96 |
+| 의미 | SP500, PRICE_RETURN, DAILY_CLOSE, 배당 제외, USD 표시 지수 points |
+| raw | data/raw/20261005T034500658318Z/fred_sp500.csv |
+| metadata | 같은 폴더 fred_sp500.metadata.json 및 request.json |
+| processed | data/processed/20261005T034500658318Z/sp500_price_daily.parquet |
+| chart | artifacts/20261005T034500658318Z/sp500_price_daily.html |
+
+빈 데이터·날짜 파싱·중복·오름차순·null/비수치/무한/0/음수 close·기간 경계·행 수를 검증한다.
+실제 검증 PASS, 요청보다 늦은 시작 및 96개 결측 제외 경고. 주말·7일 초과 간격 경고는 없었다.
+원본 bytes와 SHA-256, UTC 조회시각, 요청 URL, 실제 기간, 정규화 버전 및 제외 날짜를 보존한다.
+Parquet를 다시 읽어 DataFrame 일치도 확인했다. 원본을 덮어쓰지 않는다.
+정규화는 빈 문자열/점 표기만 제외하며 잘못된 숫자·중복·역순을 고치지 않고 실패시킨다.
+
+한계: 결측일이 모두 휴장일임을 거래소 달력으로 증명한 것은 아니다. 짧은 누락은 gap warning으로 잡히지 않을 수 있다.
+구조 PASS는 전 거래일 완전성·외부 공급자 대조·경제적 정확성 인증이 아니다.
+현재는 단일 공급자 데이터이며 교차 검증은 후속 과제다. TR/배당/ETF 가격으로 해석하지 않는다.
+
+## 장기 Historical Provider 후보 비교 (미채택, 2026-10-05)
+
+아래는 공식 문서를 확인한 2개 후보이며 실제 다운로드/유료 계약 검증은 하지 않았다.
+확인되지 않은 상품별 필드는 미확인으로 기록한다.
+
+| 기준 | S&P DJI 직접 공급 | EODData |
+| --- | --- | --- |
+| History length | 역사 지수 level 제공; S&P500 각 series의 최초 일자는 계정 reference 조회/견적 확인 필요 | 상품은 최대 30년 EOD 이력 광고; SPX 개별 최초 일자/완전성 확인 필요 |
+| Daily | EOD 제공 | EOD 제공 |
+| Price Return / Total Return | 공식 PR/TR/NTR 정의; 정확한 구독 series와 권한 확인 필요 | SPX PR 식별 및 TR 별도 제공 여부 계약·샘플 확인 필요 |
+| OHLC | 조사한 API 개요는 level 중심; OHLC 미확인 | ASCII 가격 데이터 제공; SPX의 실제 OHLC 필드·역사 구간 확인 필요 |
+| Adjusted / dividend | PR 배당 제외, TR/NTR은 방법론별; ETF adjusted price와 별개 | 일반 주식 EOD는 split-adjusted 설명; 지수 PR/TR·배당 처리에 이 설명을 전용하지 않음 |
+| API / download | 인증 REST JSON, SFTP, SPICE; Data Services 계정 필요 | 공식 API, 구매한 이력 ZIP/ASCII download |
+| License / usage | 구독·데이터 라이선스 협의 필요, 공개 재배포 허가 미확인 | 일반 membership은 개인 이용, 웹 표시·상업 이용 별도 라이선스; 무단 재배포 금지 |
+| Automation | 공식 인증 API는 장점; 실제 rate limit/SLA/복구 미검증 | 공식 API는 장점; plan별 호출 제한, 수정·복구 안정성 미검증 |
+| Free / paid | 구독 계약형; 무료 장기 다운로드로 가정하지 않음 | 무료 tier와 유료 membership/역사 데이터 구매; 장기 무료로 가정하지 않음 |
+| 판단 | 원제공자 정의·provenance 강점, 비용/계약 확인 필요 | 접근 방식·가격표 공개가 장점, SPX 의미와 품질 추가 검증 필요 |
+
+근거: [S&P DJI API](https://www.spglobal.com/spdji/en/landing/topic/api-data-solutions/),
+[S&P500 정의](https://www.spglobal.com/spdji/en/indices/equity/sp-500/),
+[EODData Historical](https://www.eoddata.com/products/historicaldata.aspx),
+[EODData Membership/사용조건](https://www.eoddata.com/products/default.aspx),
+[EODData 공식 API](https://api.eoddata.com/).
+
+장기 provider는 계속 미정이다. 구독 전 SPX sample, PR/TR series ID, 시작일·누락·수정정책,
+OHLC, 로컬 보관 및 파생 결과 공개 권한, 자동화 제한을 검증해야 한다. FRED의 기간 제한을 우회하거나
+미검증 wrapper로 장기 기록을 연결하지 않는다. 이번 단계에서 구매·계약·장기 공급자 채택은 하지 않았다.
