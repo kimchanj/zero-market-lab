@@ -138,3 +138,13 @@ STEP 2는 월 적립·현금·포지션·Buy & Hold 기준선이지만 시작하
 
 commit 전 변경 파일/공백/diff를 검토하고 데이터 제외 여부를 확인한다.
 기능 commit과 origin/main push 후 실제 hash 및 최종 상태를 후속 종료 기록으로 남긴다.
+
+### STEP 1 종료 기록
+
+- 기능 commit: `03cf19fc7865dbbedc745949a1b61551e8c95e81`
+  (`feat: establish real S&P500 market data foundation`).
+- origin/main push 성공. `git ls-remote`의 main hash와 로컬 HEAD 일치 확인.
+- 해당 push 직후 working tree clean, staged/unstaged 공백 검사 통과.
+- DoD: **PASS**. 환경·최소 의존성·실데이터 raw/processed/provenance·validation·29 tests·
+  실제 실행·사용자 제공 화면 검토·문서·diff·commit·push·clean 확인 완료.
+- 이 종료 기록은 별도 docs commit으로 보존한다. STEP 2는 시작하지 않았으며 사용자 검토 대기다.
