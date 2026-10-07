@@ -39,9 +39,8 @@ def test_public_server_uses_synthetic_assets_engine_and_empty_news(tmp_path: Pat
     worker = Thread(target=server.serve_forever, daemon=True)
     worker.start()
     root = f"http://127.0.0.1:{server.server_port}"
-    origin = f"https://127.0.0.1:{server.server_port}"
+    origin = root
     try:
-        assert urlopen(root + "/healthz").read() == b"ok"
         assert b"PUBLIC_DEMO" in urlopen(root + "/tiger_etf_v2/tiger_data.js").read()
         try:
             urlopen(root + "/tiger_etf_v2/research_input.json")

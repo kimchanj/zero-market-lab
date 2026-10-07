@@ -682,3 +682,15 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
 - Render Web Service 설정, Python 버전, 최소 runtime 의존성, health endpoint를 추가했다.
   Public URL 발급과 실제 외부 smoke test는 호스팅 계정 연결 후 진행한다. 실제 URL이 없으므로
   GitHub Website와 README Live Demo에는 값을 등록하지 않는다.
+
+## 2026-10-07 — 배포 목표 정정: GitHub Repository 체크포인트
+
+- 공식 프로젝트 URL은 `https://github.com/kimchanj/zero-market-lab`이다. 이 URL은
+  웹 앱 실행 주소가 아니며 GitHub Pages나 외부 호스팅을 이번 단계에서 진행하지 않는다.
+- 위 배포 준비 기록 이후 사용자 지시에 따라 Render 연결을 해제하고 `render.yaml`,
+  `requirements-public.txt`, `.python-version`, 외부 바인딩 및 health endpoint를 제거했다.
+  별도 계정·호스팅·Public URL은 생성하지 않았다.
+- 합성 `PUBLIC_DEMO` 데이터 모드는 실제 데이터 공개 위험 없이 로컬에서 사용할 수 있어 유지한다.
+  최종 재검증에서 Python 196개와 Hover JS 8개 테스트, `pip check`, `git diff --check`가
+  모두 통과했다. 로컬 브라우저 자동 검증은 도구 보안 정책으로 재실행할 수 없어 기존 화면
+  검토 기록과 자동화 테스트를 구분해 보고한다.

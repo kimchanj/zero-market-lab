@@ -59,8 +59,7 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
                 self.send_error(404)
                 return
             # Do not allow a third-party page to drive this local endpoint.
-            expected = (f"https://{self.headers.get('Host')}" if mode == "PUBLIC_DEMO"
-                        else f"http://127.0.0.1:{self.server.server_port}")
+            expected = f"http://127.0.0.1:{self.server.server_port}"
             if self.headers.get("Origin") not in {None, expected}:
                 self.send_error(403)
                 return
@@ -104,18 +103,6 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
         def do_GET(self):
             # Restrict static serving to the chart and its vendored chart dependency.
             path = urlsplit(self.path).path
-            if path == "/":
-                self.send_response(302)
-                self.send_header("Location", "/tiger_etf_v2/")
-                self.end_headers()
-                return
-            if path == "/healthz":
-                self.send_response(200)
-                self.send_header("Content-Type", "text/plain; charset=utf-8")
-                self.send_header("Content-Length", "2")
-                self.end_headers()
-                self.wfile.write(b"ok")
-                return
             if mode == "PUBLIC_DEMO" and path in {"/tiger_etf_v2/tiger_data.js", "/tiger_etf_v2/simulation_data.js"}:
                 asset = (public_dir or ROOT / "experiments/public_demo") / path.rsplit("/", 1)[-1]
                 content = asset.read_bytes()
@@ -145,8 +132,7 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
 def main():
     parser = argparse.ArgumentParser()
     mode = os.environ.get("ZML_DATA_MODE", "LOCAL_RESEARCH")
-    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8062")))
-    parser.add_argument("--host", default="0.0.0.0" if mode == "PUBLIC_DEMO" else "127.0.0.1")
+    parser.add_argument("--port", type=int, default=8062)
     parser.add_argument("--export-example", action="store_true")
     args = parser.parse_args()
     context = load_context(mode)
@@ -160,8 +146,8 @@ def main():
         (folder / "snapshot.json").write_text(json.dumps(response["snapshot"], ensure_ascii=False, indent=2), encoding="utf-8")
         print(folder)
         return
-    print(f"Research workstation ({mode}): http://{args.host}:{args.port}/tiger_etf_v2/", flush=True)
-    ThreadingHTTPServer((args.host, args.port), handler_for(context, mode)).serve_forever()
+    print(f"Research workstation ({mode}): http://127.0.0.1:{args.port}/tiger_etf_v2/", flush=True)
+    ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(context, mode)).serve_forever()
 
 
 if __name__ == "__main__":

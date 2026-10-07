@@ -4,16 +4,18 @@
 TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요약, 일별 Ledger,
 차트 Hover 매매복기와 뉴스 맥락을 살펴볼 수 있다. 투자 조언이나 실거래 서비스가 아니다.
 
+공식 프로젝트 URL: [GitHub Repository](https://github.com/kimchanj/zero-market-lab)
+
 ## 데이터 정책
 
 - **Local Research:** 로컬에 저장된 실제 시세로 전체 Backtest를 실행한다.
-- **Public Demo:** 프로그램 공개용으로 별도 생성한 합성 ETF 시세만 사용한다. 실제 TIGER
+- **Synthetic Demo (로컬):** 별도 생성한 합성 ETF 시세만 사용한다. 실제 TIGER
   가격·수익률이나 시장 사건을 재현하지 않는다.
-- Daum Finance 등 제3자 원본 historical OHLCV와 생성된 시세 payload는 GitHub 및 Public
-  Hosting asset에 포함하지 않는다. 데이터 수집·재배포 권한은 별도 검토 대상이다.
+- Daum Finance 등 제3자 원본 historical OHLCV와 생성된 시세 payload는 GitHub에
+  포함하지 않는다. 데이터 수집·재배포 권한은 별도 검토 대상이다.
 
-Public Demo 배포 구조와 데이터 출처 검토는 [배포 문서](docs/public-deployment.md)에 기록한다.
-실제 Public URL이 검증된 뒤 Live Demo 링크를 이 상단에 추가한다.
+데이터 출처와 로컬 실행 모드는 [데이터 공개 정책](docs/data-publication-policy.md)에 기록한다.
+현재 웹 앱은 Python 서버가 필요하므로 GitHub Repository URL은 실행 가능한 웹 앱 주소가 아니다.
 
 ## STEP 5 Interactive Comparison UI
 
