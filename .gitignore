@@ -13,4 +13,5 @@ experiments/tiger_etf_v2/chart_report.json
 experiments/tiger_etf_v2/simulation_data.js
 experiments/tiger_etf_v2/simulation_report.json
 experiments/tiger_etf_v2/research_input.json
+experiments/public_demo/
 .env

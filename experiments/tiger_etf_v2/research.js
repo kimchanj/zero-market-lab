@@ -1,6 +1,10 @@
 (() => {
   const $ = id => document.getElementById(id);
   const initial = window.TIGER_SIMULATION_DATA?.scope.actual_period || window.TIGER_V2_DATA.period;
+  const publicDemo = window.TIGER_V2_DATA?.provenance?.data_mode === 'PUBLIC_DEMO';
+  if (publicDemo) {
+    $('news-assumption').textContent = 'Public Demo는 합성 시세를 사용하며 실제 뉴스 카탈로그를 연결하지 않습니다. 가격·전략 Snapshot과 검증 프롬프트는 사용할 수 있습니다.';
+  }
   $('research-start').value = initial[0];
   $('research-end').value = initial[1];
   let response = null, revision = 0, selectedType = 'markdown', mdUrl = null, jsonUrl = null;
@@ -72,7 +76,9 @@
     }));
     $('news-list').replaceChildren();
     if (!packet.news.length) {
-      const empty=document.createElement('p'); empty.textContent='이 기간에 일치하는 카탈로그 자료가 없습니다. 전체 뉴스 부재를 뜻하지 않습니다.';
+      const empty=document.createElement('p'); empty.textContent=publicDemo
+        ? 'Public Demo에는 실제 뉴스가 연결되지 않습니다. 합성 가격을 실제 사건과 연결하지 않습니다.'
+        : '이 기간에 일치하는 카탈로그 자료가 없습니다. 전체 뉴스 부재를 뜻하지 않습니다.';
       $('news-list').append(empty);
     }
     packet.news.forEach(item => {

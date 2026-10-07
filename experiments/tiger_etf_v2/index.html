@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TIGER 미국S&P500 · Actual ETF OHLCV</title>
+  <title>ZERO MARKET LAB · Trading Research Workstation</title>
   <link rel="stylesheet" href="chart.css">
 </head>
 <body>
   <main class="workspace">
     <header class="topbar">
       <div>
-        <p class="eyebrow">ZERO MARKET LAB · ACTUAL ETF TRACK V2</p>
-        <h1>TIGER 미국S&amp;P500 <span>360750 · KRX · KRW</span></h1>
+        <p id="data-track" class="eyebrow">ZERO MARKET LAB · RESEARCH WORKSTATION V2</p>
+        <h1 id="instrument-name">데이터 불러오는 중… <span id="instrument-meta"></span></h1>
       </div>
-      <div id="status" class="status">실제 원시 OHLCV · 보조 공급자</div>
+      <div id="status" class="status">데이터 성격 확인 중…</div>
     </header>
 
     <details class="workspace-section investment-panel" open aria-label="투자조건 입력">
@@ -88,7 +88,7 @@
     </section>
 
     <section class="chart-shell">
-      <div id="chart" aria-label="TIGER 미국S&P500 일봉 캔들 및 거래량 차트"></div>
+      <div id="chart" aria-label="일봉 캔들 및 거래량 차트"></div>
       <div id="loading">검증된 OHLCV를 불러오는 중…</div>
     </section>
 
@@ -112,7 +112,7 @@
       <label class="hypothesis-label" for="research-hypothesis">검증할 가설</label>
       <textarea id="research-hypothesis" rows="2" maxlength="4000" placeholder="예: 금리 발표 전후 익절 대기기간이 달라졌는가?"></textarea>
       <div class="research-controls"><button id="build-research">뉴스 조회</button><button id="build-validation">검증방 프롬프트 생성</button><span id="research-status" role="status">기간과 가설을 설정해 연구를 시작하세요.</span></div>
-      <p class="assumption">공식 발표 4건을 검증한 표본 카탈로그입니다. 전체 뉴스 검색이 아니며 0건은 사건 부재를 뜻하지 않습니다. 뉴스는 매매결과를 변경하지 않습니다.</p>
+      <p id="news-assumption" class="assumption">공식 발표 4건을 검증한 표본 카탈로그입니다. 전체 뉴스 검색이 아니며 0건은 사건 부재를 뜻하지 않습니다. 뉴스는 매매결과를 변경하지 않습니다.</p>
       <div id="price-context" class="summary-grid"></div>
       <div id="news-list" class="news-list"></div>
       <div class="research-controls exports">

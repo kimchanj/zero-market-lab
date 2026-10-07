@@ -668,3 +668,17 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
 - 전체 Python **193 tests PASS**, Hover JS **8 tests PASS**, `pip check` 및 `git diff --check` PASS다.
   브라우저 도구가 로컬 URL 접근을 보안 정책으로 차단해 이번 변경의 실제 Hover 화면 캡처와
   시각 회귀는 미완료다. 사용자 화면 확인 전 Git commit/push하지 않는다.
+
+## 2026-10-07 — V2 GitHub Checkpoint 및 Public Demo 배포 준비
+
+- 사용자 V2 승인 후 Python 193개, Hover JS 8개, `pip check`, 공백 검사를 재실행했다.
+  원본 TIGER OHLCV·생성 chart/simulation payload는 Git 추적 대상에 없음을 확인했다.
+- V2 코드·문서·테스트 79개 파일을 `813b9a0d5a2691bc554a1b38a6ef82bd61666109`
+  (`feat: build ZERO MARKET LAB trading research workstation v2`)로 commit하여
+  `origin/main`에 push했고 원격 HEAD가 일치했다.
+- Public Demo 빌더는 실제 시세 파일이나 외부 API를 읽지 않고 100% 합성 OHLCV를 만든다.
+  `LOCAL_RESEARCH`는 기존 로컬 TIGER 1,508행을 유지한다. Public 서버는 합성 bundle만
+  로드하며 공개 화면에 합성 데이터 배지를 표시하고 실제 뉴스 카탈로그는 비운다.
+- Render Web Service 설정, Python 버전, 최소 runtime 의존성, health endpoint를 추가했다.
+  Public URL 발급과 실제 외부 smoke test는 호스팅 계정 연결 후 진행한다. 실제 URL이 없으므로
+  GitHub Website와 README Live Demo에는 값을 등록하지 않는다.

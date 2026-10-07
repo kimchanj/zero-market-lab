@@ -9,6 +9,19 @@
     return;
   }
 
+  const publicDemo = data.provenance?.data_mode === 'PUBLIC_DEMO';
+  document.title = `${data.instrument} · ZERO MARKET LAB`;
+  document.getElementById('data-track').textContent = publicDemo
+    ? 'ZERO MARKET LAB · PUBLIC DEMO · SYNTHETIC DATA'
+    : 'ZERO MARKET LAB · ACTUAL ETF TRACK V2';
+  document.getElementById('instrument-name').firstChild.textContent = `${data.instrument} `;
+  document.getElementById('instrument-meta').textContent =
+    `${data.symbol} · ${publicDemo ? 'SYNTHETIC' : 'KRX'} · ${data.currency}`;
+  document.getElementById('status').textContent = publicDemo
+    ? 'PUBLIC DEMO · 100% 합성 시세 · 실제 TIGER/시장 가격 아님'
+    : '실제 원시 OHLCV · 보조 공급자';
+  document.getElementById('chart').setAttribute('aria-label', `${data.instrument} 일봉 캔들 및 거래량 차트`);
+
   const { CandlestickSeries, ColorType, CrosshairMode, HistogramSeries, LineSeries, LineStyle, createChart, createSeriesMarkers } = window.LightweightCharts;
   const chart = createChart(document.getElementById('chart'), {
     autoSize: true,
@@ -30,7 +43,7 @@
   });
 
   const candles = chart.addSeries(CandlestickSeries, {
-    title: '360750', upColor: '#26a69a', downColor: '#ef5350',
+    title: data.symbol, upColor: '#26a69a', downColor: '#ef5350',
     wickUpColor: '#26a69a', wickDownColor: '#ef5350', borderVisible: false,
     priceFormat: { type: 'price', precision: 0, minMove: 5 },
   }, 0);
@@ -203,7 +216,7 @@
     simulation=payload;
     window.TIGER_SIMULATION_DATA=payload;
     shownHoverDate=null;
-    $('technical-run').textContent=`실행 ID ${payload.run_id} · 요청 기간 ${payload.scope.requested_period.join(' ~ ')} · 실제 관측 ${payload.scope.actual_period.join(' ~ ')} · ${payload.provenance?.source || 'TIGER OHLCV'}`;
+    $('technical-run').textContent=`실행 ID ${payload.run_id} · 요청 기간 ${payload.scope.requested_period.join(' ~ ')} · 실제 관측 ${payload.scope.actual_period.join(' ~ ')} · ${payload.provenance?.source || 'OHLCV'}`;
     ledgerByTime.clear(); payload.ledger.forEach(row=>ledgerByTime.set(row.date,row));
     markerById.clear();
     const markers=payload.chart.markers.map((marker,index)=>{
@@ -276,7 +289,7 @@
     $('run-status').textContent='선택한 투자기간으로 계산 중…'; $('run-simulation').disabled=true;
     try {
       const request=await fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
-      if(request.status===404) throw new Error('재계산 API가 없습니다. scripts/run_research_ui.py로 실행한 8062 화면을 열어주세요.');
+      if(request.status===404) throw new Error('재계산 API가 없습니다. 서버 실행 상태를 확인하세요.');
       const payload=await request.json().catch(()=>{throw new Error('서버 응답 형식을 읽을 수 없습니다. 이전 결과를 유지합니다.');});
       if(id!==requestId||version!==inputRevision) return;
       if(!request.ok) throw new Error(payload.error);

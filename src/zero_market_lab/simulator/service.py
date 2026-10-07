@@ -54,7 +54,8 @@ def run_simulation(bundle: dict, params: dict) -> dict:
         'requested_period':[start.isoformat(),end.isoformat()],
         'actual_period':[result.summary.start_date.isoformat(),result.summary.end_date.isoformat()],
         'initial_capital':float(seed),'parameter_search':False,
-        'fee_disclaimer': '매수·매도 각 0.015%, 세금 0% 연구 가정 · 분배금 제외 · 시가 확인 후 주문',
+        'fee_disclaimer': bundle['simulation'].get('fee_disclaimer',
+            '매수·매도 각 0.015%, 세금 0% 연구 가정 · 분배금 제외 · 시가 확인 후 주문'),
     }
     payload['minimum_net']={'rate':float(minimum),'mode':'EVALUATION_ONLY',
         'description':'최소 순수익은 완료 거래의 평가 기준입니다. 익절 체결가격을 변경하지 않습니다.'}

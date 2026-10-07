@@ -5,6 +5,7 @@ from datetime import date
 from hashlib import sha256
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import sys
 from collections import OrderedDict
@@ -18,8 +19,16 @@ from zero_market_lab.research.snapshot import build_snapshot, markdown
 from zero_market_lab.simulator.service import run_simulation
 
 
-def load_context():
-    raw = (ROOT / "experiments/tiger_etf_v2/research_input.json").read_bytes()
+def load_context(mode="LOCAL_RESEARCH", public_dir: Path | None = None):
+    if mode not in {"LOCAL_RESEARCH", "PUBLIC_DEMO"}:
+        raise ValueError("ZML_DATA_MODE must be LOCAL_RESEARCH or PUBLIC_DEMO")
+    folder = (public_dir or ROOT / "experiments/public_demo") if mode == "PUBLIC_DEMO" else ROOT / "experiments/tiger_etf_v2"
+    raw = (folder / "research_input.json").read_bytes()
+    if mode == "PUBLIC_DEMO":
+        bundle = json.loads(raw)
+        if bundle["simulation"]["provenance"].get("data_mode") != "PUBLIC_DEMO" or not bundle["simulation"]["provenance"].get("synthetic"):
+            raise ValueError("Public mode requires an explicitly synthetic demo bundle")
+        return bundle, CatalogNewsProvider([]), sha256(raw).hexdigest()
     catalog = ROOT / "data/news/official_context_catalog.json"
     return json.loads(raw), CatalogNewsProvider.from_file(catalog), sha256(raw + catalog.read_bytes()).hexdigest()
 
@@ -34,7 +43,7 @@ def research_response(context, params):
             "validation": markdown(packet, "validation"), "concept": markdown(packet, "concept")}
 
 
-def handler_for(context):
+def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
     runs = OrderedDict()
     lock = Lock()
     class Handler(SimpleHTTPRequestHandler):
@@ -50,7 +59,8 @@ def handler_for(context):
                 self.send_error(404)
                 return
             # Do not allow a third-party page to drive this local endpoint.
-            expected = f"http://127.0.0.1:{self.server.server_port}"
+            expected = (f"https://{self.headers.get('Host')}" if mode == "PUBLIC_DEMO"
+                        else f"http://127.0.0.1:{self.server.server_port}")
             if self.headers.get("Origin") not in {None, expected}:
                 self.send_error(403)
                 return
@@ -94,6 +104,28 @@ def handler_for(context):
         def do_GET(self):
             # Restrict static serving to the chart and its vendored chart dependency.
             path = urlsplit(self.path).path
+            if path == "/":
+                self.send_response(302)
+                self.send_header("Location", "/tiger_etf_v2/")
+                self.end_headers()
+                return
+            if path == "/healthz":
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Length", "2")
+                self.end_headers()
+                self.wfile.write(b"ok")
+                return
+            if mode == "PUBLIC_DEMO" and path in {"/tiger_etf_v2/tiger_data.js", "/tiger_etf_v2/simulation_data.js"}:
+                asset = (public_dir or ROOT / "experiments/public_demo") / path.rsplit("/", 1)[-1]
+                content = asset.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/javascript; charset=utf-8")
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(content)
+                return
             allowed = {"/tiger_etf_v2/", "/tiger_etf_v2/index.html", "/tiger_etf_v2/chart.js",
                        "/tiger_etf_v2/hover.js",
                        "/tiger_etf_v2/chart.css", "/tiger_etf_v2/research.js",
@@ -112,10 +144,12 @@ def handler_for(context):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8062)
+    mode = os.environ.get("ZML_DATA_MODE", "LOCAL_RESEARCH")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8062")))
+    parser.add_argument("--host", default="0.0.0.0" if mode == "PUBLIC_DEMO" else "127.0.0.1")
     parser.add_argument("--export-example", action="store_true")
     args = parser.parse_args()
-    context = load_context()
+    context = load_context(mode)
     if args.export_example:
         response = research_response(context, {"start": "2023-01-04", "end": "2023-04-04",
             "hypothesis": "금리 및 물가 발표와 익절 대기기간 사이에 관계가 있었는지 검증한다."})
@@ -126,8 +160,8 @@ def main():
         (folder / "snapshot.json").write_text(json.dumps(response["snapshot"], ensure_ascii=False, indent=2), encoding="utf-8")
         print(folder)
         return
-    print(f"Research workstation: http://127.0.0.1:{args.port}/tiger_etf_v2/", flush=True)
-    ThreadingHTTPServer(("127.0.0.1", args.port), handler_for(context)).serve_forever()
+    print(f"Research workstation ({mode}): http://{args.host}:{args.port}/tiger_etf_v2/", flush=True)
+    ThreadingHTTPServer((args.host, args.port), handler_for(context, mode)).serve_forever()
 
 
 if __name__ == "__main__":

@@ -28,7 +28,9 @@ def quick_range_start(last_date: str | date, quick_range: str, first_date: str |
     return start.date().isoformat()
 
 
-def build_chart_payload(frame: pd.DataFrame, distributions: pd.DataFrame, provenance: dict) -> dict:
+def build_chart_payload(frame: pd.DataFrame, distributions: pd.DataFrame, provenance: dict,
+                        *, instrument: str = "TIGER 미국S&P500", symbol: str = "360750",
+                        currency: str = "KRW") -> dict:
     """Build Lightweight Charts candlestick and volume series from validated rows."""
 
     candles = []
@@ -70,9 +72,9 @@ def build_chart_payload(frame: pd.DataFrame, distributions: pd.DataFrame, proven
         for row in distributions.itertuples(index=False)
     ]
     return {
-        "instrument": "TIGER 미국S&P500",
-        "symbol": "360750",
-        "currency": "KRW",
+        "instrument": instrument,
+        "symbol": symbol,
+        "currency": currency,
         "candles": candles,
         "volume": volumes,
         "distributions": distribution_payload,
