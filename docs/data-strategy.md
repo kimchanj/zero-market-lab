@@ -1,5 +1,19 @@
 # Data Strategy
 
+## Future Cross-Asset data contract
+
+Cross-Asset 연구는 지표 관찰과 투자성과 series를 분리한다. 기존 FRED `SP500` Price Index와 `VIXCLS`는
+시장·위험 관찰에 사용한다. Treasury yield는 bond price/return이 아니므로 Hedge Effectiveness 입력으로
+사용하지 않는다. 투자 가능한 성과 비교 후보는 동일 adjusted-price 계약의 SPY/TLT/GLD이며 provider 조정,
+분배금, 보수, 시작일과 라이선스를 검증한 뒤 확정한다. 충분한 역사의 total-return index가 확보되면 ETF
+proxy와 별도 series로 등록한다.
+
+각 series는 instrument, source/provider, series type, currency, frequency, timezone/close convention,
+adjusted status, dividend/interest handling, retrieval timestamp와 snapshot/hash를 보존한다. Daily return
+correlation과 첫 normalized chart는 공통 유효 관측일 inner join을 기본으로 한다. Forward fill은 최대 gap과
+휴장 의미를 정의한 별도 정책 없이는 사용하지 않는다. 상세 기준은
+[Cross-Asset & Hedge Research](cross-asset-hedge-research.md)에 기록한다.
+
 ## 의미와 공급자
 
 S&P Dow Jones Indices를 Index 정의 및 Return 유형의 official reference로 사용한다.
@@ -114,3 +128,10 @@ Parquet를 다시 읽어 DataFrame 일치도 확인했다. 원본을 덮어쓰�
 장기 provider는 계속 미정이다. 구독 전 SPX sample, PR/TR series ID, 시작일·누락·수정정책,
 OHLC, 로컬 보관 및 파생 결과 공개 권한, 자동화 제한을 검증해야 한다. FRED의 기간 제한을 우회하거나
 미검증 wrapper로 장기 기록을 연결하지 않는다. 이번 단계에서 구매·계약·장기 공급자 채택은 하지 않았다.
+
+## TIGER 360750 Actual OHLCV Track V2
+
+2026-10-06 기준 상세한 source selection, raw/adjusted 구분, 1,508-row validation, Yahoo 교차검증과
+missing-session 정책은 [TIGER ETF V2 Foundation](tiger-etf-v2-foundation.md)에 기록했다. KRX 자동
+다운로드는 현재 인증이 필요해 Daum `adjusted=false`를 보조 공급자로 사용한다. 이 데이터는 실제 ETF
+execution 연구용이며 FRED S&P500 benchmark history와 결합하지 않는다.

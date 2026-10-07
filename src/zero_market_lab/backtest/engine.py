@@ -1,6 +1,7 @@
 """Daily Case #01 engine for strategies A, B and C."""
 
 from dataclasses import dataclass, field
+import math
 
 import pandas as pd
 
@@ -38,6 +39,9 @@ def run_case01_strategy(
     market_data: pd.DataFrame,
     monthly_contribution: float,
     strategy_code: str | StrategyCode,
+    take_profit_rate: float = 0.05,
+    reentry_months: int = 1,
+    initial_investment: float = 0.0,
 ) -> BacktestResult:
     """Run one Case #01 strategy under same-close, zero-cost assumptions."""
     validation = validate(market_data)
@@ -48,18 +52,42 @@ def run_case01_strategy(
     market["date"] = pd.to_datetime(market["date"])
     market["close"] = pd.to_numeric(market["close"])
 
-    policy = MonthlyContributionPolicy(monthly_contribution)
-    contribution_dates = policy.dates(market["date"])
-    strategy = create_case01_strategy(strategy_code)
+    if not math.isfinite(initial_investment) or initial_investment < 0:
+        raise ValueError("Initial investment must be finite and >= 0")
+    if not math.isfinite(monthly_contribution) or monthly_contribution < 0:
+        raise ValueError("Monthly contribution must be finite and >= 0")
+    if initial_investment == 0 and monthly_contribution == 0:
+        raise ValueError("Initial investment or monthly contribution must be > 0")
+
+    policy = (
+        MonthlyContributionPolicy(monthly_contribution)
+        if monthly_contribution > 0
+        else None
+    )
+    contribution_dates = policy.dates(market["date"]) if policy else set()
+    strategy = create_case01_strategy(
+        strategy_code,
+        take_profit_rate=take_profit_rate,
+        reentry_months=reentry_months,
+    )
     portfolio = Portfolio()
     states: list[dict] = []
     events: list[dict] = []
     completed_waiting_days = 0
 
+    first_date = pd.Timestamp(market["date"].iloc[0])
     for row in market.itertuples(index=False):
         date = pd.Timestamp(row.date)
         price = float(row.close)
+        if date == first_date and initial_investment > 0:
+            portfolio.contribute(initial_investment)
+            events.append({
+                "date": date, "event_type": "INITIAL_CONTRIBUTION",
+                "amount": initial_investment, "price": None, "quantity": None,
+                "reason": "FIRST_MARKET_OBSERVATION",
+            })
         if date in contribution_dates:
+            assert policy is not None
             portfolio.contribute(policy.amount)
             events.append({
                 "date": date, "event_type": "CONTRIBUTION", "amount": policy.amount,
@@ -140,5 +168,7 @@ def run_case01_strategy(
             "completed_cash_waiting_days": completed_waiting_days,
             "open_cash_waiting_days": open_waiting_days,
             "final_strategy_state": strategy.state.value,
+            "initial_investment": float(initial_investment),
+            "monthly_contribution": float(monthly_contribution),
         },
     )

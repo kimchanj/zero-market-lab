@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
+import math
 
 import pandas as pd
 
@@ -21,9 +22,16 @@ class StrategyState(str, Enum):
 class Case01Strategy:
     code: StrategyCode
     take_profit_rate: float = 0.05
+    reentry_months: int = 1
     state: StrategyState = StrategyState.INVESTED
     sell_date: pd.Timestamp | None = None
     reentry_target_date: pd.Timestamp | None = None
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.take_profit_rate) or self.take_profit_rate <= 0:
+            raise ValueError("Take-profit rate must be finite and > 0")
+        if not isinstance(self.reentry_months, int) or self.reentry_months <= 0:
+            raise ValueError("Reentry months must be a positive integer")
 
     @property
     def name(self) -> str:
@@ -50,7 +58,7 @@ class Case01Strategy:
     def enter_waiting(self, sell_date: pd.Timestamp) -> None:
         self.state = StrategyState.WAITING_REENTRY
         self.sell_date = sell_date
-        self.reentry_target_date = sell_date + pd.DateOffset(months=1)
+        self.reentry_target_date = sell_date + pd.DateOffset(months=self.reentry_months)
 
     def reentry_is_due(self, date: pd.Timestamp) -> bool:
         return (
@@ -65,5 +73,13 @@ class Case01Strategy:
         self.reentry_target_date = None
 
 
-def create_case01_strategy(code: str | StrategyCode) -> Case01Strategy:
-    return Case01Strategy(code=StrategyCode(code))
+def create_case01_strategy(
+    code: str | StrategyCode,
+    take_profit_rate: float = 0.05,
+    reentry_months: int = 1,
+) -> Case01Strategy:
+    return Case01Strategy(
+        code=StrategyCode(code),
+        take_profit_rate=take_profit_rate,
+        reentry_months=reentry_months,
+    )

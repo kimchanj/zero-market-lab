@@ -6,4 +6,11 @@ pytest-cache-files-*/
 data/raw/
 data/processed/
 artifacts/
+experiments/lightweight_charts/prototype_data.js
+experiments/lightweight_charts/prototype_report.json
+experiments/tiger_etf_v2/tiger_data.js
+experiments/tiger_etf_v2/chart_report.json
+experiments/tiger_etf_v2/simulation_data.js
+experiments/tiger_etf_v2/simulation_report.json
+experiments/tiger_etf_v2/research_input.json
 .env

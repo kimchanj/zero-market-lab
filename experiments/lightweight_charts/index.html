@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZML Chart Engine Spike</title>
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="identity">
+      <strong>ZML · CHART ENGINE SPIKE</strong>
+      <span>S&P500 Price Index · Daily · Dividend Excluded</span>
+    </div>
+    <nav class="ranges" aria-label="Visible range">
+      <button data-range="1W">1W</button>
+      <button data-range="1M">1M</button>
+      <button data-range="3M">3M</button>
+      <button data-range="6M">6M</button>
+      <button data-range="1Y">1Y</button>
+      <button data-range="3Y">3Y</button>
+      <button data-range="ALL">ALL</button>
+    </nav>
+    <div class="series" aria-label="Visible series">
+      <label><input type="checkbox" value="market" checked> S&amp;P500</label>
+      <label><input type="checkbox" value="A" checked> A</label>
+      <label><input type="checkbox" value="B" checked> B</label>
+      <label><input type="checkbox" value="C" checked> C</label>
+      <label><input type="checkbox" value="contribution" checked> 납입금</label>
+    </div>
+    <div class="events" aria-label="Strategy C markers">
+      <label><input type="checkbox" value="BUY" checked> Buy</label>
+      <label><input type="checkbox" value="TAKE_PROFIT" checked> TP</label>
+      <label><input type="checkbox" value="SELL" checked> Sell</label>
+      <label><input type="checkbox" value="REENTRY" checked> Reentry</label>
+    </div>
+    <span id="performance">Preparing chart…</span>
+  </header>
+  <main>
+    <div id="legend" class="legend">Move the crosshair to inspect Market → Strategy results.</div>
+    <div id="chart" aria-label="Market and portfolio synchronized panes"></div>
+    <footer>
+      <span>Pane 1: Market + Strategy C events</span>
+      <span>Pane 2: Portfolio A / B / C + Contribution</span>
+      <span>No volume: the price index has no trading volume.</span>
+      <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">
+        TradingView Lightweight Charts™ © 2025 TradingView, Inc.
+      </a>
+    </footer>
+  </main>
+  <script src="vendor/lightweight-charts.standalone.production.js"></script>
+  <script src="prototype_data.js"></script>
+  <script src="prototype.js"></script>
+</body>
+</html>

@@ -1,5 +1,97 @@
 # Architecture baseline — STEP 0
 
+## Future Goal and Sensitivity analysis boundary
+
+장기 연구 흐름은 `Market Data → Backtest Engine → Strategy Result → Goal Analyzer → Sensitivity Analyzer
+→ Visualization`으로 확장한다. Goal Analyzer는 완성된 전략 결과에 목표 정의를 적용하는 Analytics 계층이며,
+목표 달성을 매수·매도 Strategy 규칙에 넣지 않는다. Sensitivity Analyzer는 여러 시작일의 독립 run 결과를
+집계한다. 전략별 실행 결과와 분석 결과를 분리하면 같은 경로에 다른 목표 정의를 재적용하고, 같은 목표를
+A/B/C에 공정하게 적용할 수 있다.
+
+`GOAL_REACHED`는 Analysis Event이고 BUY/SELL/TAKE_PROFIT/REENTRY 같은 Transaction Event가 아니다.
+향후 event contract는 category와 definition version을 보존해야 한다. 목표 상태는 `GOAL_REACHED`,
+`GOAL_NOT_REACHED`, `INSUFFICIENT_HORIZON`을 구분해 데이터 끝으로 인한 censoring을 실패로 오분류하지 않는다.
+세부 입력·출력, 목표수익률 분모의 미결정 대안, 한국어 UX와 시간축 정책은
+[Goal-Based Investment Simulation](goal-based-simulation.md)에 기록한다. Prototype v1은 Engine의
+`initial_investment=0` 하위 호환 입력, `INITIAL_CONTRIBUTION` 이벤트, 별도 Goal Analyzer와 분리 UI만
+구현한다. Sensitivity Analyzer와 반복 시작일 분석은 구현하지 않는다.
+
+Goal Prototype UI는 A/B/C 선택 dropdown을 두지 않고 같은 config로 세 결과를 항상 계산한다. Visualization은
+하나의 shared date axis에서 S&P500을 왼쪽 y축, A/B/C Portfolio와 목표를 오른쪽 y축에 표시한다.
+Layer selector는 저장된 figure의 trace visibility만 바꾸며 Backtest를 재실행하지 않는다. C 거래 marker는
+기존 Event Log의 TAKE_PROFIT/SELL/REENTRY만 사용하고 기본 OFF다. 실제값 dual-axis가 현재 범위이며
+시작값 100 normalization view는 후속 후보로 남긴다.
+
+투자 실험 입력은 `Investment Conditions`(시작일, 초기 투자금, 매월 투자금, 기간)와
+`Strategy Conditions`(익절 기준, C 재진입 대기)로 분리한다. UI 숫자 문자열은 application service 경계에서
+정규화하고 Engine에는 검증된 실수·정수만 전달한다. 초기 투자금과 월 투자금은 각각 0일 수 있지만 둘 다
+0이면 거부한다. Goal은 선택 분석이며 월 적립금이 있으면 목표수익률 분모가 확정될 때까지 목표선과 달성
+판정을 생성하지 않는다. `StrategyEvaluation` adapter가 총 납입금, 최종 평가금액, 손익, A 대비 차이,
+거래 횟수, 현금 대기일, Time in Market과 현재 경로의 MDD를 Result에서 계산하며 Strategy/Engine 규칙을
+복제하지 않는다.
+
+## Future Strategy Discovery boundary
+
+자동 전략 탐색은 `Investment Goal → Candidate Generator → Backtest Engine → Goal Analyzer → Risk Analyzer
+→ Sensitivity Analyzer → Constraint Filter → Scoring / Candidate Ranking` 흐름의 Research 계층이다.
+후보 생성·제약·점수·순위를 Backtest Engine이나 Strategy에 넣지 않는다. 사후 최적 경로는
+`Theoretical Upper Bound`라는 별도 결과 유형으로 분리하고, 실전 후보는 각 시점까지 관찰 가능한 정보만 쓴다.
+
+초기 진화 방향은 고정된 Strategy 구조의 Parameter Grid Search다. Strategy Building Block 조합과 A/B/C
+리팩터링은 별도 호환 계약이 마련된 이후로 유보한다. Investment Journal은 Event Log와 Daily State에서 만든
+설명 projection이며 원본 event ID, state date, rule ID, 조건값과 임계값을 보존한다. 상세 설계는
+[Automatic Strategy Search and Investment Journal](automatic-strategy-search.md)을 따른다. 현재 구현은 없다.
+
+## Cross-Asset & Hedge Research boundary
+
+Cross-Asset 연구는 `MarketSeries Registry → Provider → Provenance Validation → Alignment → Return/Drawdown
+Analytics → Normalized/Correlation Visualization` 계층으로 분리한다. 초기 대상은 S&P500, 장기국채, Gold,
+VIX다. VIX는 risk indicator이며, Treasury yield는 금리 관찰값이므로 어느 것도 투자 가능한 total-return
+series로 취급하지 않는다. Indicator 관찰 계약과 SPY/TLT/GLD adjusted-price 기반 investable proxy 계약을
+분리한다.
+
+날짜 정렬, 기준 100 정규화, rolling/downside correlation과 drawdown episode는 Strategy Engine 밖의 Analytics
+계층에 둔다. 관찰 분석을 완료한 뒤 Fixed Allocation, Dynamic Hedge 순서로 별도 Case를 만든다. Production
+Unified Chart 연결의 선행조건은 STEP 5 Zoom/Pan visible-range autoscale Critical Gate 통과다. 상세 설계는
+[Cross-Asset & Hedge Research](cross-asset-hedge-research.md)를 따른다. 현재 구현은 없다.
+
+## STEP 5 Chart Engine architecture spike
+
+Visualization Layer의 장기 적합성을 확인하기 위해 Lightweight Charts 5.2.1 prototype을
+`experiments/lightweight_charts/`에 격리했다. 기존 Dash/Plotly UI와 Python Market Data, Comparison Service,
+Backtest, Portfolio, Strategy, Event Log는 유지한다. Prototype은 Python이 실제 market/state/event JSON을
+생성하고 브라우저 adapter가 rendering, pane, crosshair, visible range, marker filter를 담당한다.
+
+실제 2,514 daily close, A/B/C portfolio, contribution, Strategy C의 기존 BUY/TAKE_PROFIT/SELL/REENTRY를
+단일 time scale의 Market/Portfolio 2-pane chart에서 검증했다. Pane은 resizable이며 chart는 auto-size를
+사용한다. Fake OHLC나 volume은 만들지 않았다.
+
+Financial Chart Quality Gate의 최종 결정은 **MIGRATE VISUALIZATION TO LIGHTWEIGHT CHARTS**다. 현재
+Plotly/Dash viewport가 zoom/pan마다 Python callback과 전체 figure redraw에 의존하는 병목을 제거하기 위한
+결정이다. Production migration은 아직 시작하지 않았으며, 다음 구현 전에 versioned Dash custom component
+또는 제한된 client adapter와 stable JSON contract를 설계해야 한다. Plotly는 정적 연구 결과와 export 용도로
+유지할 수 있다. Prototype iframe 방식은 검증에는
+충분하지만 cross-frame state와 테스트 비용 때문에 production 기본안으로 권고하지 않는다.
+
+Future Market Activity Overlay는 S&P500 지수의 volume이 아니라 SPY trading volume 또는 실제 ETF provider의
+volume을 명시적인 proxy로 사용한다. 실제 OHLC가 확보되기 전 candlestick을 만들지 않는다. 추가 indicator,
+drawing, annotation은 Lightweight Charts pane/plugin/custom primitive로 별도 검증한다.
+
+## STEP 5 UI application boundary
+
+Dash layout/callback은 `zero_market_lab.ui.app`, 입력 검증·기간 필터·비교 실행은 UI 독립적인
+`zero_market_lab.ui.service`, Plotly 변환은 `zero_market_lab.ui.figures`가 담당한다. 데이터 흐름은
+Dash UI → Comparison Service → 기존 Multi-Strategy Engine → ComparisonOutput → Figure/Metrics Adapter다.
+callback은 Portfolio 회계나 전략 실행 규칙을 구현하지 않는다.
+
+서비스 config는 Start/End Date, Monthly Contribution, Take Profit %, Reentry Months를 포함한다.
+Take Profit과 Reentry Months는 기존 Strategy/Engine에 명시적 파라미터로 전달된다. fixed assumptions는
+표시 전용이며 transaction cost, slippage, FX, dividend 처리 로직을 추가하지 않는다.
+
+Market/Portfolio figure는 동일 date axis 계약과 adaptive tick format, spike guide를 사용한다. Dash의
+`relayoutData` clientside callback이 두 figure의 x-axis range와 autorange reset을 동기화한다. 서버 callback은
+Run Backtest에서 validation → filter → engine rerun → 두 figure와 Metrics 갱신만 수행한다.
+
 ## STEP 4 전략 상태와 실행 경계
 
 `run_case01_strategy`는 공통 일별 회계 흐름을 담당하고 A/B/C 전략 객체는 익절 사용 여부와
@@ -181,3 +273,37 @@ zero-market-lab/
 STEP 0은 문서 수를 줄이기 위해 docs 바로 아래에 통합 문서를 둔다.
 구현 단계에서 필요할 때 위 구조로 확장하며 빈 source 디렉터리나 placeholder 코드를 만들지 않는다.
 테스트 입력은 tests/fixtures를 기본 소유 위치로 하고 data/fixtures와 중복 관리하지 않는다.
+
+## Actual ETF Track V2 격리
+
+`zero_market_lab.tiger_v2`는 TIGER 360750 acquisition parsing, validation, payload 계약만 소유한다.
+`experiments/tiger_etf_v2`는 기존 vendored Lightweight Charts를 재사용하되 Plotly/Dash와 독립된 정적
+financial chart다. Legacy backtest, strategy, goal UI는 수정하거나 호출하지 않는다. V2 OHLC execution과
+A/B/C migration은 데이터·차트 승인 뒤 새 execution 경계로 추가한다.
+
+## Generic Explainable Simulator 경계
+
+`zero_market_lab.simulator`는 V2 데이터·차트 위에서 자산 독립형 일봉 실행을 검증하는 별도 core다.
+의존 방향은 Provider → Instrument/MarketBar → Strategy Parameters → Execution/Cost → Portfolio
+Accounting → DecisionRecord/Daily Ledger → Trade/Period Summary다. 종목별 metadata는
+`Instrument` 인스턴스에만 존재하며 Engine은 `360750`이나 시장별 조건으로 분기하지 않는다.
+
+일별 Ledger와 DecisionRecord가 계산의 source of truth다. TIGER 화면은 JSON payload를 표시하고
+BUY/SELL marker, 평균단가, 익절선을 그릴 뿐 체결·손익을 다시 계산하지 않는다. 같은 bar에서 진입과
+익절이 모두 가능한 경우는 `AMBIGUOUS_ENTRY_EXIT`로 기록하고 포지션을 유지한다. 비용은 주입 가능한
+정책이며 실증 값은 연구용 가정이다. 계약·실행결과·제약은
+[Generic Explainable Simulator](generic-explainable-simulator.md)에 기록한다.
+
+## 현재 Research Workstation과 향후 계좌 제약
+
+`simulator.service.run_simulation`은 UI 입력을 검증하고 선택 기간의 실제 OHLCV만 잘라 기존 generic
+engine을 재실행한다. 반환된 단일 run ID의 Summary, Daily Ledger, Trade, Chart overlay를 한 화면에
+전달한다. `research.snapshot`은 그 실행 결과와 독립된 공식 뉴스 카탈로그를 결합하되 거래 결과를
+수정하지 않는다. `REPLAY_MODE`는 한국 거래일 종료 시점까지 공개된 자료로 제한하고,
+`POST_ANALYSIS_MODE`는 사후 회고를 구분해 표기한다. 사용 흐름과 한계는
+[Research Workstation](research-workstation.md)에 기록한다.
+
+향후 `AccountProfile`은 상품 적격성, 세금·수수료, 한도와 같은 **제약 정책**으로 추가한다.
+`Instrument`와 실행 엔진에는 연금저축·ISA 등 계좌 이름을 하드코딩하지 않는다. 예를 들어 연금저축의
+TIGER 장기 적립, 중개형 ISA의 국내 주식 능동 매매는 별도 AccountProfile과 전략의 조합으로
+표현한다. 현 프로토타입은 계좌별 세제나 상품 적격성을 계산하지 않는다.

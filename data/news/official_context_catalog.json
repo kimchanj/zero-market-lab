@@ -1,0 +1,46 @@
+{
+  "catalog_version": "2026-10-06-v1",
+  "coverage": "Manually verified official-release sample only; not exhaustive news coverage.",
+  "items": [
+    {
+      "published_at": "2023-02-01T14:00:00-05:00",
+      "headline": "Federal Reserve issues FOMC statement — February 2023",
+      "source": "Federal Reserve",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20230201a.htm",
+      "summary": "연방기금금리 목표범위를 4.50~4.75%로 인상한다고 발표했다. 해당 가격 구간의 원인으로 단정하지 않는다.",
+      "keywords": ["Federal Reserve", "FOMC", "US economy", "interest rates"],
+      "event_type": "FOMC", "macro_category": "MONETARY_POLICY", "source_quality": 3,
+      "verified_on": "2026-10-06"
+    },
+    {
+      "published_at": "2023-03-14T08:30:00-04:00",
+      "headline": "Consumer Price Index — February 2023 release",
+      "source": "US Bureau of Labor Statistics",
+      "url": "https://www.bls.gov/news.release/archives/cpi_03142023.htm",
+      "summary": "발표 당시 2월 CPI는 전월 대비 0.4%, 전년 대비 6.0% 상승했다. 지표 대상월과 공개일을 구분한다.",
+      "keywords": ["CPI", "inflation", "US economy"],
+      "event_type": "CPI", "macro_category": "INFLATION", "source_quality": 3,
+      "verified_on": "2026-10-06"
+    },
+    {
+      "published_at": "2023-03-22T14:00:00-04:00",
+      "headline": "Federal Reserve issues FOMC statement — March 2023",
+      "source": "Federal Reserve",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20230322a.htm",
+      "summary": "연방기금금리 목표범위를 4.75~5.00%로 인상했다. 은행권 상황에 따른 신용여건 긴축 가능성과 불확실성도 언급했다.",
+      "keywords": ["Federal Reserve", "FOMC", "US economy", "interest rates"],
+      "event_type": "FOMC", "macro_category": "MONETARY_POLICY", "source_quality": 3,
+      "verified_on": "2026-10-06"
+    },
+    {
+      "published_at": "2023-04-12T14:00:00-04:00",
+      "headline": "Minutes of the FOMC, March 21–22, 2023 — published April 12",
+      "source": "Federal Reserve",
+      "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20230412a.htm",
+      "summary": "3월 21~22일 회의 의사록의 4월 12일 공개 안내다. 3월 당시 공개 자료로 취급하지 않으며 사후분석에만 사용한다.",
+      "keywords": ["Federal Reserve", "FOMC", "US economy"],
+      "event_type": "FOMC_MINUTES", "macro_category": "MONETARY_POLICY", "source_quality": 3,
+      "event_date": "2023-03-22", "retrospective": true, "verified_on": "2026-10-06"
+    }
+  ]
+}

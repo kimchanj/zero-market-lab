@@ -1,0 +1,45 @@
+{
+  "instrument": "TIGER 미국S&P500",
+  "symbol": "360750",
+  "provider_symbol": "A360750 / KR7360750004",
+  "market": "KRX 유가증권시장 (KOSPI)",
+  "currency": "KRW",
+  "source": "Daum Finance daily chart API, adjusted=false (secondary provider)",
+  "source_url": "https://finance.daum.net/api/charts/A360750/days?limit=2000&adjusted=false",
+  "official_krx_reference": "https://data.krx.co.kr/?scrnId=02080706",
+  "official_product_reference": "https://www.tigeretf.com/upload/etf/20250804095324004654.pdf",
+  "official_source_status": "KRX automatic download requires authenticated KRX_ID/KRX_PW as of 2026-09; credentials were not configured.",
+  "retrieval_time": "2026-10-06T14:01:34.700533+00:00",
+  "frequency": "daily",
+  "adjusted_status": "Unadjusted response requested explicitly with adjusted=false. Open/high/low/close are raw exchange-traded fields. Adjusted history is not execution data.",
+  "distribution_handling": "Cash distributions are not applied to raw execution prices and are not yet credited by a strategy engine. Official TIGER factsheets confirm quarterly distributions.",
+  "requested_range": [
+    "2020-08-01",
+    "2026-10-06"
+  ],
+  "actual_range": [
+    "2020-08-07",
+    "2026-10-06"
+  ],
+  "row_count": 1508,
+  "raw_sha256": "e19524e85f9d60c04b5591a8337ff520110833772a14a1da18c76c6463d07836",
+  "raw_file": "data\\raw\\tiger_360750\\20261006T140134Z\\daum_unadjusted_chart_response.json",
+  "processed_file": "data\\processed\\tiger_360750\\20261006T140134Z\\tiger_360750_ohlcv.csv",
+  "missing_date_policy": "Provider observations only; weekends and KRX holidays are not rows. No forward-fill or synthetic bars. Exchange-calendar reconciliation is pending.",
+  "validation": {
+    "row_count": 1508,
+    "first_date": "2020-08-07",
+    "last_date": "2026-10-06",
+    "duplicate_dates": 0,
+    "null_required_values": 0,
+    "zero_volume_rows": 0,
+    "largest_calendar_gap_days": 8,
+    "missing_date_policy": "Provider observations only; weekends and KRX holidays are not rows. No forward-fill or synthetic bars. Exchange-calendar reconciliation is pending."
+  },
+  "provider_metadata": {
+    "symbol_code": "KR7360750004",
+    "response_code": 200,
+    "response_message": "OK",
+    "adjusted_request": false
+  }
+}

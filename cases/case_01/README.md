@@ -116,6 +116,22 @@ Dot-com, GFC, COVID, Zero Rate, Inflation, Rate Hike, Recovery의 구간 경계�
 In-Sample/Out-of-Sample은 후속 도입하며 분할과 평가 기준을 사전에 저장한다.
 차이가 시작된 날짜의 가격·적립·평균원가·현금·체결 이벤트를 차트와 로그로 역추적한다.
 
+### 향후 목표 기반·시작 시점 분석
+
+Case #01은 후속 단계에서 A/B/C에 같은 목표 정의와 최대 투자기간을 적용하고, 월별 시작점을 이동해
+목표 달성률·도달기간 분포·목표 전 최대낙폭을 비교한다. 목표 달성률만으로 전략을 판정하지 않고
+미달성, 큰 낙폭, 특정 시장 국면에 집중된 성공, 넓은 기간 분산을 반증 증거로 기록한다.
+
+목표수익률의 분모는 누적 납입금, 초기 투자금, money-weighted return 가운데 아직 결정하지 않았다.
+데이터 끝까지 충분한 투자기간을 관측하지 못한 run은 `INSUFFICIENT_HORIZON`으로 분리하고
+`GOAL_NOT_REACHED`와 합치지 않는다. `GOAL_REACHED`는 거래 신호가 아닌 분석 이벤트다.
+상세 설계는 [Goal-Based Investment Simulation](../../docs/goal-based-simulation.md)을 따른다.
+
+별도 Prototype v1에서는 `initial_investment` 기본값 0을 Engine에 추가해 기존 실행을 보존한다.
+0보다 큰 경우 첫 market observation date에 `INITIAL_CONTRIBUTION`으로 현금을 넣고 기존 매수 흐름을
+재사용한다. 목표 판정은 Strategy가 아니라 Goal Analyzer가 일별 Portfolio State에 적용한다.
+현재 목표금액은 월 추가 투자금 0을 기본으로 한 `initial investment × (1 + target return)`이다.
+
 ## Bias checklist — 매 실행 기록
 
 Look-Ahead, Survivorship(지수 역사와 현재 구성종목 재구성 구별), Dividend Handling,

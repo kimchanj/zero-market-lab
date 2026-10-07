@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TIGER 미국S&P500 · Actual ETF OHLCV</title>
+  <link rel="stylesheet" href="chart.css">
+</head>
+<body>
+  <main class="workspace">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ZERO MARKET LAB · ACTUAL ETF TRACK V2</p>
+        <h1>TIGER 미국S&amp;P500 <span>360750 · KRX · KRW</span></h1>
+      </div>
+      <div id="status" class="status">실제 원시 OHLCV · 보조 공급자</div>
+    </header>
+
+    <details class="workspace-section investment-panel" open aria-label="투자조건 입력">
+      <summary><span class="step-number">1</span> 투자조건 입력</summary>
+      <form id="simulation-form">
+        <div class="investment-inputs">
+          <label>투자 시작일<input id="invest-start" type="date" required></label>
+          <label>투자 종료일<input id="invest-end" type="date" required></label>
+          <label>초기 투자금 (원)<input id="invest-capital" type="text" inputmode="decimal" value="500,000" required></label>
+          <label>매수 지정가 (%)<div class="input-affix"><span>시가 −</span><input id="invest-entry" type="number" value="1" min="0" max="50" step="0.1" required></div></label>
+          <label>익절 목표 (%)<div class="input-affix"><span>매수가 +</span><input id="invest-tp" type="number" value="5" min="0.01" max="100" step="0.01" required></div></label>
+          <label>최소 순수익 (%)<input id="invest-minimum" type="number" value="1" min="0" max="100" step="0.1" required></label>
+        </div>
+        <div class="run-toolbar"><div class="period-buttons" aria-label="투자 빠른 기간">
+          <button type="button" data-invest-months="1">1개월</button><button type="button" data-invest-months="3">3개월</button>
+          <button type="button" data-invest-months="6">6개월</button><button type="button" data-invest-months="12">1년</button>
+          <button type="button" id="all-invest-period">전체</button>
+          <button type="button" id="custom-period" class="active">직접입력</button>
+        </div><button type="submit" id="run-simulation" class="primary">시뮬레이션 실행</button></div>
+        <p class="input-note">기본 기간은 올해 1월 1일~오늘(한국시간)입니다. 빠른 기간은 오늘부터 역산해 입력 날짜를 바꿉니다. 적용하려면 실행을 누르세요. 실제 관측 종료일은 데이터 최신일에 따라 앞설 수 있습니다. 최소 순수익은 수수료·세금 차감 후 확보하고 싶은 수익률의 평가 기준이며 익절 주문을 변경하지 않습니다.</p>
+        <p id="run-status" role="status">기본 시나리오를 불러오는 중…</p>
+      </form>
+    </details>
+    <details class="workspace-section result-panel" open aria-label="결과요약">
+      <summary><span class="step-number">2</span> 결과요약</summary>
+      <p id="simulation-period" class="section-meta"></p>
+      <div id="summary-cards" class="summary-grid"></div>
+      <div id="secondary-summary" class="secondary-summary"></div>
+      <details class="auxiliary"><summary>비용 가정 · 미청산 보유 현황</summary><p id="fee-assumption"></p><div id="open-position"></div></details>
+    </details>
+    <details class="workspace-section review-panel" open aria-label="일별 매매복기">
+      <summary><span class="step-number">3</span> 일별 매매복기</summary>
+      <div id="marker-detail" class="marker-detail" hidden></div>
+      <div class="table-scroll"><table id="ledger-table">
+        <thead><tr><th>날짜</th><th>OHLC</th><th>상태</th><th>행동</th><th>체결가</th><th>보유수량</th><th>현금</th><th>총자산</th><th>익절 목표</th><th>보유일</th><th>설명</th></tr></thead><tbody></tbody>
+      </table></div>
+      <details class="auxiliary"><summary>거래별 결과 자세히 보기</summary><div class="table-scroll"><table id="trade-table">
+        <thead><tr><th>진입일 / 체결가</th><th>매도일 / 체결가</th><th>수량</th><th>순손익</th><th>순수익률</th><th>보유기간</th><th>최소 순수익</th></tr></thead><tbody></tbody>
+      </table></div></details>
+    </details>
+    <details class="workspace-section market-panel" open><summary><span class="step-number">4</span> 금융차트</summary>
+    <p class="section-meta">차트의 빠른 조회 범위는 화면만 변경합니다. 투자기간은 위에서 설정합니다.</p>
+    <section class="toolbar" aria-label="차트 도구">
+      <div class="ranges" aria-label="빠른 조회 범위">
+        <button data-range="1M">1M</button><button data-range="3M">3M</button>
+        <button data-range="6M">6M</button><button data-range="1Y">1Y</button>
+        <button data-range="3Y">3Y</button><button data-range="ALL">ALL</button>
+        <button data-range="SIM" class="active">SIM</button>
+      </div>
+      <div class="layers">
+        <label><input type="checkbox" value="candles" checked> 캔들</label>
+        <label><input type="checkbox" value="volume" checked> 거래량</label>
+        <label><input type="checkbox" value="averageCost" checked> 평균매입가</label>
+        <label><input type="checkbox" value="takeProfit" checked> 익절선</label>
+        <label><input type="checkbox" value="markers" checked> 매매표시</label>
+      </div>
+    </section>
+
+    <section class="quote" aria-live="polite">
+      <strong id="quote-date">—</strong>
+      <span>시 <b id="quote-open">—</b></span>
+      <span>고 <b id="quote-high">—</b></span>
+      <span>저 <b id="quote-low">—</b></span>
+      <span>종 <b id="quote-close">—</b></span>
+      <span id="quote-change">—</span>
+      <span>거래량 <b id="quote-volume">—</b></span>
+      <span id="strategy-state" class="strategy-state">전략 상태 —</span>
+    </section>
+    <section id="strategy-hover" class="strategy-hover" aria-label="차트 날짜별 매매복기">
+      <div class="strategy-hover-heading"><small>내 전략 · <span id="hover-date">—</span></small><strong id="hover-title">차트에서 날짜를 가리키세요</strong></div>
+      <div id="hover-lines" class="strategy-hover-lines"></div>
+    </section>
+
+    <section class="chart-shell">
+      <div id="chart" aria-label="TIGER 미국S&P500 일봉 캔들 및 거래량 차트"></div>
+      <div id="loading">검증된 OHLCV를 불러오는 중…</div>
+    </section>
+
+    <footer>
+      <span id="performance">—</span>
+      <span>휠 확대/축소 · 드래그 이동 · View Range만 변경</span>
+    </footer>
+
+    </details>
+    <details class="workspace-section research-fold"><summary><span class="step-number">5</span> 뉴스 / 연구</summary>
+    <section class="research-panel" aria-label="뉴스 및 연구 패킷">
+      <header class="section-head"><div><p class="eyebrow">CONTEXT · RESEARCH</p><h2>선택 기간 주요 관련 뉴스</h2></div><span>뉴스와 가격의 인과관계는 미검증</span></header>
+      <div class="research-controls">
+        <label>연구 시작일<input type="date" id="research-start"></label>
+        <label>연구 종료일<input type="date" id="research-end"></label>
+        <button id="use-simulation-period">현재 시뮬레이션 기간 가져오기</button>
+        <button id="use-chart-range">현재 차트 범위 가져오기</button>
+        <label>자료 모드<select id="research-mode"><option value="REPLAY_MODE">복기 모드 · 종료일까지 공개</option><option value="POST_ANALYSIS_MODE">사후 분석 · 이후 회고 포함</option></select></label>
+      </div>
+      <p id="research-period-source" class="section-meta">현재 시뮬레이션 기간</p>
+      <label class="hypothesis-label" for="research-hypothesis">검증할 가설</label>
+      <textarea id="research-hypothesis" rows="2" maxlength="4000" placeholder="예: 금리 발표 전후 익절 대기기간이 달라졌는가?"></textarea>
+      <div class="research-controls"><button id="build-research">뉴스 조회</button><button id="build-validation">검증방 프롬프트 생성</button><span id="research-status" role="status">기간과 가설을 설정해 연구를 시작하세요.</span></div>
+      <p class="assumption">공식 발표 4건을 검증한 표본 카탈로그입니다. 전체 뉴스 검색이 아니며 0건은 사건 부재를 뜻하지 않습니다. 뉴스는 매매결과를 변경하지 않습니다.</p>
+      <div id="price-context" class="summary-grid"></div>
+      <div id="news-list" class="news-list"></div>
+      <div class="research-controls exports">
+        <button data-export="markdown" disabled>Snapshot Markdown</button>
+        <button data-export="validation" disabled>검증방용 프롬프트</button>
+        <button data-export="concept" disabled>개념방용 프롬프트</button>
+        <button id="copy-research" disabled>본문 복사</button>
+        <a id="download-markdown" hidden>Markdown 저장</a>
+        <a id="download-json" hidden>Snapshot JSON 저장</a>
+      </div>
+      <label for="research-output">연구방 전달 문서 · 생성 후 직접 검토하고 복사하세요</label>
+      <textarea id="research-output" rows="10" readonly placeholder="Snapshot과 검증방·개념방 프롬프트가 여기에 표시됩니다."></textarea>
+    </section>
+
+    </details>
+    <details class="workspace-section technical-panel"><summary><span class="step-number">6</span> 기술 상세 / 디버그</summary>
+      <p>원시 DecisionRecord와 거래 ID는 각 일별 행의 상세보기 안에서 확인할 수 있습니다. 시뮬레이션 계산은 Python 엔진에서 수행되며 뉴스 자료는 계산에 영향을 주지 않습니다.</p>
+      <p id="technical-run"></p>
+    </details>
+  </main>
+  <script src="../lightweight_charts/vendor/lightweight-charts.standalone.production.js"></script>
+  <script src="tiger_data.js"></script>
+  <script src="simulation_data.js"></script>
+  <script src="hover.js"></script>
+  <script src="chart.js"></script>
+  <script src="research.js"></script>
+</body>
+</html>
