@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 from datetime import date
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -10,13 +11,16 @@ from pathlib import Path
 import sys
 from collections import OrderedDict
 from threading import Lock
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT))
 from zero_market_lab.research.news import CatalogNewsProvider
 from zero_market_lab.research.snapshot import build_snapshot, markdown
 from zero_market_lab.simulator.service import run_simulation
+from scripts.run_samsung_family import build_report
+from scripts.run_asset_discovery import build_report as build_discovery_report
 
 
 def load_context(mode="LOCAL_RESEARCH", public_dir: Path | None = None):
@@ -45,6 +49,7 @@ def research_response(context, params):
 
 def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
     runs = OrderedDict()
+    discovery_runs = OrderedDict()
     lock = Lock()
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
@@ -103,6 +108,72 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
         def do_GET(self):
             # Restrict static serving to the chart and its vendored chart dependency.
             path = urlsplit(self.path).path
+            if path == "/api/asset-discovery" and mode == "LOCAL_RESEARCH":
+                try:
+                    params = parse_qs(urlsplit(self.path).query, strict_parsing=True)
+                    if any(len(values) != 1 for values in params.values()) or set(params) - {"as_of", "lookback", "capital", "us_capital"}:
+                        raise ValueError("Invalid discovery parameters")
+                    as_of = date.fromisoformat(params["as_of"][0]) if "as_of" in params else None
+                    lookback = params.get("lookback", ["1Y"])[0]
+                    try:
+                        capital = Decimal(params.get("capital", ["500000"])[0])
+                        us_capital = Decimal(params.get("us_capital", ["500"])[0])
+                    except InvalidOperation as error:
+                        raise ValueError("Invalid capital") from error
+                    if (not capital.is_finite() or not Decimal(10000) <= capital <= Decimal(1000000000)
+                        or not us_capital.is_finite() or not Decimal(10) <= us_capital <= Decimal(1000000)):
+                        raise ValueError("Invalid capital")
+                    if lookback not in {"6M", "1Y", "3Y", "5Y"}:
+                        raise ValueError("Invalid lookback")
+                    local_versions = tuple(sorted((str(path), path.stat().st_mtime_ns)
+                                                  for path in (ROOT / "data/processed").rglob("*")
+                                                  if path.is_file() and path.suffix in {".csv", ".json"}
+                                                  if "korea_" in str(path) or "samsung_005930" in str(path)
+                                                  or "us_" in str(path)))
+                    cache_key = (as_of, lookback, capital, us_capital, local_versions)
+                    with lock:
+                        report = discovery_runs.get(cache_key)
+                    if report is None:
+                        report = build_discovery_report(as_of=as_of, lookback=lookback,
+                                                        capital=capital, us_capital=us_capital)
+                        with lock:
+                            discovery_runs[cache_key] = report
+                            while len(discovery_runs) > 8:
+                                discovery_runs.popitem(last=False)
+                    raw = json.dumps(report, ensure_ascii=False, allow_nan=False).encode("utf-8")
+                    status = 200
+                except ValueError as error:
+                    raw = json.dumps({"error": str(error)}, ensure_ascii=False).encode("utf-8")
+                    status = 400
+                except Exception:
+                    raw = json.dumps({"error": "종목 발굴 실행에 실패했습니다. 로컬 데이터를 확인하세요."}, ensure_ascii=False).encode("utf-8")
+                    status = 502
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(raw)
+                return
+            if path == "/api/samsung-family" and mode == "LOCAL_RESEARCH":
+                try:
+                    payload = build_report()
+                    raw = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
+                    status = 200
+                except (ValueError, FileNotFoundError) as error:
+                    raw = json.dumps({"error": str(error)}, ensure_ascii=False).encode("utf-8")
+                    status = 503
+                except Exception:
+                    raw = json.dumps({"error": "삼성전자 비교를 계산하지 못했습니다. 로컬 데이터 상태를 확인하세요."},
+                                     ensure_ascii=False).encode("utf-8")
+                    status = 502
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(raw)
+                return
             if mode == "PUBLIC_DEMO" and path in {"/tiger_etf_v2/tiger_data.js", "/tiger_etf_v2/simulation_data.js"}:
                 asset = (public_dir or ROOT / "experiments/public_demo") / path.rsplit("/", 1)[-1]
                 content = asset.read_bytes()
@@ -118,6 +189,11 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
                        "/tiger_etf_v2/chart.css", "/tiger_etf_v2/research.js",
                        "/tiger_etf_v2/tiger_data.js", "/tiger_etf_v2/simulation_data.js",
                        "/lightweight_charts/vendor/lightweight-charts.standalone.production.js"}
+            if mode == "LOCAL_RESEARCH":
+                allowed.update({"/samsung_strategy_family/", "/samsung_strategy_family/index.html",
+                                "/samsung_strategy_family/style.css", "/samsung_strategy_family/app.js"})
+                allowed.update({"/asset_discovery/", "/asset_discovery/index.html",
+                                "/asset_discovery/style.css", "/asset_discovery/app.js"})
             if path not in allowed:
                 self.send_error(404)
                 return

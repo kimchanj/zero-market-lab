@@ -1,0 +1,29 @@
+{
+  "instrument": "삼성전자",
+  "symbol": "005930",
+  "provider_symbol": "KR7005930003",
+  "source": "Daum Finance daily chart API, adjusted=false (secondary provider)",
+  "source_url": "https://finance.daum.net/api/charts/A005930/days?limit=350&adjusted=false",
+  "retrieval_time": "2026-10-08T11:42:23.904121+00:00",
+  "as_of": "2026-10-08",
+  "adjusted_status": "UNADJUSTED",
+  "raw_sha256": "8631266233c373a7d7ead1df6369d003f719e5adc7e9bcba3f382f2be7f0c5b6",
+  "row_count": 350,
+  "actual_range": [
+    "2025-04-30",
+    "2026-10-08"
+  ],
+  "raw_file": "data\\raw\\samsung_005930\\20261008T114223Z\\daum_unadjusted_chart_response.json",
+  "processed_file": "data\\processed\\samsung_005930\\20261008T114223Z\\samsung_005930_ohlcv.csv",
+  "validation": {
+    "row_count": 350,
+    "first_date": "2025-04-30",
+    "last_date": "2026-10-08",
+    "duplicate_dates": 0,
+    "null_required_values": 0,
+    "zero_volume_rows": 0,
+    "largest_calendar_gap_days": 8,
+    "missing_date_policy": "Provider observations only; weekends and KRX holidays are not rows. No forward-fill or synthetic bars. Exchange-calendar reconciliation is pending."
+  },
+  "redistribution_status": "Unverified; raw and processed prices are Git-ignored and local-only"
+}

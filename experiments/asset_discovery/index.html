@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>종목 발굴 · ZERO MARKET LAB</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><nav><a href="../tiger_etf_v2/">TIGER 연구</a><a href="../samsung_strategy_family/">삼성전자 전략 비교</a></nav>
+<p>ZERO MARKET LAB · LOCAL RESEARCH</p><h1>종목 발굴</h1>
+<p>가격행동 → 전략 적합 후보 → 자산×전략 비교. 과거 결과만 표시하며 자동매매를 실행하지 않습니다.</p></header>
+<section class="panel"><h2>연구 조건</h2><div class="controls">
+<label>시장<select id="market"><option value="ALL">한국 + 미국</option><option value="KRX">한국 · KRX</option><option value="US">미국 · US</option></select></label>
+<label>Universe<input value="Korea 3 + US 3 Seed" disabled></label>
+<label>기간<select id="lookback"><option>1Y</option><option>6M</option><option>3Y</option><option>5Y</option></select></label>
+<label>평가 기준일<input id="asof" type="date"></label>
+<label>한국 초기자금 (KRW)<input id="capital" type="number" min="10000" max="1000000000" step="1000" value="500000"></label>
+<label>미국 초기자금 (USD)<input id="us-capital" type="number" min="10" max="1000000" step="10" value="500"></label>
+<label>전략<select id="strategy"></select></label>
+<button id="run" type="button">종목 분석 실행</button></div>
+<p class="note">한국은 KRW, 미국은 USD 기준으로 각각 독립 계산합니다. 서로 다른 통화의 최종자산은 직접 비교하지 않습니다. 미국 공급자 OHLC의 기업행동 보정 방식은 확인 중이며, 모든 비용은 연구용 가정입니다.</p></section>
+<p id="status" role="status">분석을 실행해 주세요.</p>
+<section class="panel"><h2>전략 적합 후보</h2>
+<div class="controls filters"><label>최소 완료거래<input id="mintrades" type="number" min="0" value="0"></label>
+<label>최대 낙폭 하한 (%)<input id="mdd" type="number" min="-100" max="0" placeholder="전체"></label>
+<label>최소 PF<input id="pf" type="number" min="0" step="0.1" placeholder="전체"></label>
+<label>최소 평균 거래대금 (현지통화)<input id="liquidity" type="number" min="0" placeholder="전체"></label>
+<label>정렬<select id="sort"><option value="net_return">순수익률</option><option value="mdd">MDD</option>
+<option value="profit_factor">PF</option><option value="completed_trades">거래수</option>
+<option value="win_rate">승률</option><option value="atr_pct">ATR%</option></select></label></div>
+<div class="table-wrap"><table><thead><tr><th>시장</th><th>종목</th><th>전략</th><th>수익률</th><th>MDD</th><th>PF</th><th>거래수</th><th>승률</th><th>평균보유</th><th>노출도</th><th>ATR%</th><th>연변동성</th></tr></thead><tbody id="candidates"></tbody></table></div>
+<p class="note">PF — 는 손실 거래가 없거나 완료 거래가 없어 정의되지 않은 경우입니다. 유동성 기준은 각 시장의 현지통화로 적용하므로 시장 필터를 먼저 선택하세요. 행을 클릭하면 해당 종목의 전략 매트릭스를 봅니다.</p></section>
+<section class="panel"><h2>Universe 데이터 상태</h2><div class="table-wrap"><table><thead><tr><th>시장</th><th>종목</th><th>상태</th><th>관측 행수</th><th>실제 마지막 관측일</th><th>공급자</th><th>가격 보정</th><th>사유 / 필요 파일</th></tr></thead><tbody id="availability"></tbody></table></div></section>
+<section class="panel"><h2 id="matrix-title">자산별 전략 매트릭스</h2><p id="why" class="note"></p><div class="table-wrap"><table><thead><tr><th>전략</th><th>최종자산</th><th>수익률</th><th>MDD</th><th>PF</th><th>거래수</th><th>승률</th><th>평균보유</th><th>비용</th></tr></thead><tbody id="matrix"></tbody></table></div></section>
+<footer>과거 가격데이터 기반 연구결과이며 미래 수익을 보장하지 않습니다. Walk-Forward와 미래 Paper Trading 검증은 아직 구현되지 않았습니다.</footer>
+</main><script src="app.js"></script></body></html>

@@ -6,6 +6,23 @@ TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요
 
 공식 프로젝트 URL: [GitHub Repository](https://github.com/kimchanj/zero-market-lab)
 
+## Asset Discovery · Research Engine (local)
+
+`/asset_discovery/` compares the existing S0–S7 strategy family across a six-asset
+research seed: Samsung Electronics, SK hynix, NAVER, NVIDIA, Microsoft, and Apple.
+It shows historical price-behavior profiles, strategy × asset metrics, data availability,
+and sortable historical-fit candidates separated by market. Korea uses native KRW 500,000;
+the US uses native USD 500. Missing local OHLCV is reported as unavailable; no synthetic
+prices fill the real-data table. The current local machine has actual-price caches for all
+six seed assets; other machines must fetch their own local data. Walk-Forward and
+append-only Paper Trading are designed but not implemented. See
+[architecture](docs/asset-discovery-architecture.md) and [Walk-Forward design](docs/walk-forward-design.md).
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_asset_discovery.py --as-of 2026-10-08 --lookback 1Y
+.\.venv\Scripts\python.exe scripts/run_research_ui.py --port 8066
+```
+
 ## 데이터 정책
 
 - **Local Research:** 로컬에 저장된 실제 시세로 전체 Backtest를 실행한다.
@@ -16,6 +33,19 @@ TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요
 
 데이터 출처와 로컬 실행 모드는 [데이터 공개 정책](docs/data-publication-policy.md)에 기록한다.
 현재 웹 앱은 Python 서버가 필요하므로 GitHub Repository URL은 실행 가능한 웹 앱 주소가 아니다.
+
+## 전략 선택과 정기 적립
+
+로컬 V2에서 익절 매매, 월별 정기 적립, 일시금 장기보유를 선택할 수 있다. 정기 적립은
+선택 기간에 포함된 매월 첫 관측 거래일 종가에 최대 정수 수량을 매수하고 잔여현금을
+이월한다. 총 납입금과 투자 손익을 분리하며, 단순 누적 수익률은 현금흐름 시점에 따른
+왜곡이 있으므로 XIRR·시간가중수익률은 후속 연구 과제다. 분배금은 데이터가 없어 제외한다.
+
+GitHub Pages는 합성 시세와 사전 계산 결과만 보여주는 읽기 전용 데모로 준비한다.
+실제 TIGER 가격 기반 계산과 새로운 조건 실행은 아래 로컬 Python 서버가 필요하다.
+
+삼성전자 최근 6개월의 S0~S7(+S6-A/B) 로컬 전략 비교는
+[연구 기록](docs/samsung-strategy-family.md)과 `/samsung_strategy_family/` 화면에서 확인한다.
 
 ## STEP 5 Interactive Comparison UI
 

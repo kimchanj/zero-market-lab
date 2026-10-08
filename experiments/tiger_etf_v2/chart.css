@@ -81,6 +81,12 @@ details summary { color: #6fb6ff; cursor: pointer; }
 .investment-panel, .result-panel, .review-panel { border:1px solid #20364c; background:#0b1726; padding:14px; border-radius:6px; }
 .step-number { display:inline-grid; place-items:center; width:23px; height:23px; border-radius:50%; background:#193b60; color:#91c4ff; font-size:12px; margin-right:7px; }
 .investment-inputs { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.strategy-picker { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 0; padding:0; border:0; }
+.strategy-picker legend { color:#a9bed2; font-size:12px; margin-bottom:5px; }
+.strategy-picker label { display:inline-flex; align-items:center; gap:5px; padding:7px 10px; border:1px solid #35506b; border-radius:4px; color:#d9e3f0; font-size:12px; cursor:pointer; }
+.strategy-picker label:has(input:checked) { background:#173b64; border-color:#4c9cff; }
+.strategy-picker input { accent-color:#4c9cff; }
+.investment-inputs [hidden] { display:none; }
 .investment-inputs label { color:#a9bed2; font-size:12px; display:flex; flex-direction:column; gap:6px; }
 .investment-inputs input { width:100%; min-width:0; height:34px; padding:6px 8px; background:#08121f; border:1px solid #35506b; color:#edf4fb; border-radius:4px; font-size:13px; }
 .input-affix { display:flex; align-items:center; gap:4px; }

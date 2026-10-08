@@ -10,6 +10,7 @@
   }
 
   const publicDemo = data.provenance?.data_mode === 'PUBLIC_DEMO';
+  const staticDemo = Boolean(window.ZML_STATIC_DEMO);
   document.title = `${data.instrument} · ZERO MARKET LAB`;
   document.getElementById('data-track').textContent = publicDemo
     ? 'ZERO MARKET LAB · PUBLIC DEMO · SYNTHETIC DATA'
@@ -154,7 +155,7 @@
           id, time: marker.time, position: marker.action === 'BUY' ? 'belowBar' : 'aboveBar',
           color: marker.action === 'BUY' ? '#4c9cff' : '#f0b84b',
           shape: marker.action === 'BUY' ? 'arrowUp' : 'arrowDown',
-          text: marker.action === 'BUY' ? '매수' : '익절',
+          text: marker.action === 'BUY' ? (simulation?.strategy.strategy_id==='PERIODIC_CONTRIBUTION'?'적립매수':'매수') : '익절',
         })) : []);
       } else series[input.value]?.applyOptions({ visible: input.checked });
     });
@@ -193,6 +194,22 @@
     const summary=simulation.summary;
     document.getElementById('simulation-period').textContent=`${summary.start_date} ~ ${summary.end_date} · ${simulation.ledger.length}거래일`;
     document.getElementById('fee-assumption').textContent=simulation.scope.fee_disclaimer;
+    const accumulating=['PERIODIC_CONTRIBUTION','LUMP_SUM_BUY_HOLD'].includes(simulation.strategy.strategy_id);
+    if(accumulating) {
+      const metrics=[['총 납입금',`${number(summary.total_contributions)}원`],['최종 자산',`${number(summary.final_portfolio_value)}원`],
+        ['누적 손익',signed(summary.net_profit),summary.net_profit>=0],['단순 누적 수익률',signed(summary.net_return,true),summary.net_return>=0],
+        ['총 보유수량',`${number(summary.position_qty)}주`],['평균 매입가',`${number(summary.average_purchase_price)}원`]];
+      document.getElementById('summary-cards').innerHTML=metrics.map(([label,value,positive])=>`<div class="metric"><span>${label}</span><strong class="${positive===undefined?'':positive?'positive':'negative'}">${value}</strong></div>`).join('');
+      document.getElementById('secondary-summary').textContent=`매수 ${summary.buy_count}회 · 잔여현금 ${number(summary.cash)}원 · 총 비용 ${number(summary.total_trading_cost)}원 · 현금흐름 조정 MDD ${number(summary.mdd*100)}% · 수익률은 누적손익/총 납입금 (XIRR 미산출)`;
+      document.getElementById('open-position').textContent=`기간 종료 시 ${number(summary.position_qty)}주 보유 · ${number(summary.final_portfolio_value)}원 평가 · 강제 매도 없음`;
+      document.querySelector('#trade-table tbody').innerHTML='';
+      document.querySelector('#ledger-table thead').innerHTML='<tr><th>날짜</th><th>OHLC</th><th>상태</th><th>행동</th><th>입금액</th><th>매수수량</th><th>총보유수량</th><th>평균매입가</th><th>현금</th><th>총자산</th><th>누적납입금</th><th>누적손익</th><th>설명</th></tr>';
+      document.querySelector('#ledger-table tbody').innerHTML=simulation.ledger.map(row=>
+        `<tr id="ledger-${row.date}"><td>${row.date}</td><td>시 ${number(row.open)} · 고 ${number(row.high)}<br>저 ${number(row.low)} · 종 ${number(row.close)}</td><td>${row.status_label}</td><td>${row.action_label}</td><td>${number(row.contribution_amount)}원</td><td>${number(row.purchase_quantity)}주</td><td>${number(row.position_qty_after)}주</td><td>${number(row.avg_entry_price_after)}원</td><td>${number(row.cash_after)}원</td><td>${number(row.portfolio_value)}원</td><td>${number(row.total_contributions)}원</td><td>${signed(row.cumulative_gain)}</td><td><div class="brief">${row.brief}</div><details><summary>상세보기</summary><p>${row.explanation} · 매수 비용 ${number(row.buy_fee)}원 · 누적 비용 ${number(row.cumulative_cost)}원</p><button data-news-date="${row.date}">관련 뉴스 보기</button></details></td></tr>`).join('');
+      document.querySelectorAll('[data-news-date]').forEach(button=>button.addEventListener('click',()=>window.dispatchEvent(new CustomEvent('zml:research-day',{detail:{date:button.dataset.newsDate}}))));
+      return;
+    }
+    document.querySelector('#ledger-table thead').innerHTML='<tr><th>날짜</th><th>OHLC</th><th>상태</th><th>행동</th><th>체결가</th><th>보유수량</th><th>현금</th><th>총자산</th><th>익절 목표</th><th>보유일</th><th>설명</th></tr>';
     const metrics=[['초기 투자금',`${number(summary.initial_capital)}원`],['최종 자산',`${number(summary.final_portfolio_value)}원`],
       ['순수익',signed(summary.net_profit),summary.net_profit>=0],['순수익률',signed(summary.net_return,true),summary.net_return>=0],
       ['완료 거래수',`${summary.completed_trades}건`],['평균 보유기간',summary.average_holding_days==null?'완료 거래 없음':`${number(summary.average_holding_days)}거래일`]];
@@ -221,10 +238,14 @@
     markerById.clear();
     const markers=payload.chart.markers.map((marker,index)=>{
       const id=`${marker.action}-${index}`; markerById.set(id,marker);
-      return {id,time:marker.time,position:marker.action==='BUY'?'belowBar':'aboveBar',color:marker.action==='BUY'?'#4c9cff':'#f0b84b',shape:marker.action==='BUY'?'arrowUp':'arrowDown',text:marker.action==='BUY'?'매수':'익절'};
+      return {id,time:marker.time,position:marker.action==='BUY'?'belowBar':'aboveBar',color:marker.action==='BUY'?'#4c9cff':'#f0b84b',shape:marker.action==='BUY'?'arrowUp':'arrowDown',text:marker.action==='BUY'?(payload.strategy.strategy_id==='PERIODIC_CONTRIBUTION'?'적립매수':'매수'):'익절'};
     });
     averageCost.setData(payload.chart.averageCost); takeProfit.setData(payload.chart.takeProfit);
-    takeProfit.applyOptions({title:`+${number(payload.strategy.take_profit_rate*100)}% 익절선`});
+    const hasTakeProfit=payload.strategy.strategy_id!=='PERIODIC_CONTRIBUTION' && payload.strategy.strategy_id!=='LUMP_SUM_BUY_HOLD';
+    const targetToggle=document.querySelector('input[value="takeProfit"]');
+    targetToggle.disabled=!hasTakeProfit; targetToggle.checked=hasTakeProfit;
+    takeProfit.applyOptions({visible:hasTakeProfit});
+    takeProfit.applyOptions({title:payload.strategy.take_profit_rate==null?'익절선 미사용':`+${number(payload.strategy.take_profit_rate*100)}% 익절선`});
     markerApi.setMarkers(document.querySelector('input[value="markers"]').checked?markers:[]);
     document.getElementById('marker-detail').hidden=true;
     renderSimulation();
@@ -257,8 +278,24 @@
   const initialToday=todaySeoul();
   $('invest-start').value=`${initialToday.slice(0,4)}-01-01`;
   $('invest-end').value=initialToday;
-  const inputIds=['invest-start','invest-end','invest-capital','invest-entry','invest-tp','invest-minimum'];
+  const inputIds=['invest-start','invest-end','invest-capital','invest-entry','invest-tp','invest-minimum','invest-contribution'];
   const dirty=()=>{inputRevision++; $('run-status').textContent='입력이 변경됐습니다. 아래는 이전 실행 결과입니다. 시뮬레이션을 실행하세요.';};
+  let selectedStrategy='TAKE_PROFIT';
+  const capitalByStrategy={TAKE_PROFIT:'500,000',PERIODIC_CONTRIBUTION:'0',LUMP_SUM_BUY_HOLD:'500,000'};
+  function selectStrategy(next) {
+    capitalByStrategy[selectedStrategy]=$('invest-capital').value;
+    selectedStrategy=next;
+    $('invest-capital').value=capitalByStrategy[next];
+    document.querySelectorAll('.take-profit-input').forEach(label=>label.hidden=next!=='TAKE_PROFIT');
+    document.querySelectorAll('.periodic-input').forEach(label=>label.hidden=next!=='PERIODIC_CONTRIBUTION');
+    document.querySelectorAll('.lump-input').forEach(label=>label.hidden=next!=='LUMP_SUM_BUY_HOLD');
+    ['invest-entry','invest-tp','invest-minimum'].forEach(id=>$(id).required=next==='TAKE_PROFIT');
+    $('invest-contribution').required=next==='PERIODIC_CONTRIBUTION';
+    dirty();
+  }
+  document.querySelectorAll('input[name="strategy"]').forEach(radio=>radio.addEventListener('change',()=>{
+    if(radio.checked) selectStrategy(radio.value);
+  }));
   inputIds.forEach(id=>$(id).addEventListener('input',()=>{
     dirty();
     if(id==='invest-start'||id==='invest-end') {
@@ -285,7 +322,9 @@
   async function runSimulation() {
     const version=inputRevision, id=++requestId;
     const params={start:$('invest-start').value,end:$('invest-end').value,initial_capital:$('invest-capital').value,
-      entry_percent:$('invest-entry').value,take_profit_percent:$('invest-tp').value,minimum_net_percent:$('invest-minimum').value};
+      strategy_id:selectedStrategy,entry_percent:$('invest-entry').value,take_profit_percent:$('invest-tp').value,
+      minimum_net_percent:$('invest-minimum').value,contribution_amount:$('invest-contribution').value,
+      frequency:$('invest-frequency').value,purchase_timing:$('invest-timing').value};
     $('run-status').textContent='선택한 투자기간으로 계산 중…'; $('run-simulation').disabled=true;
     try {
       const request=await fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
@@ -299,6 +338,9 @@
     finally {if(id===requestId) $('run-simulation').disabled=false;}
   }
   $('simulation-form').addEventListener('submit',event=>{event.preventDefault();runSimulation();});
-  runSimulation();
+  if (staticDemo) {
+    document.querySelectorAll('#simulation-form input, #simulation-form select, #simulation-form button').forEach(control=>control.disabled=true);
+    $('run-status').textContent='GitHub Pages 읽기 전용 데모 · 합성 시세의 사전 계산 결과입니다. 새 시뮬레이션은 로컬 앱에서 실행하세요.';
+  } else runSimulation();
   document.getElementById('performance').textContent=`${data.candles.length.toLocaleString('ko-KR')} bars · 2 panes · setup ${(performance.now()-started).toFixed(1)} ms`;
 })();

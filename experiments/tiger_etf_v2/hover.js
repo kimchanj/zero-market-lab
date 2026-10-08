@@ -17,6 +17,18 @@
 
   function model(row, isFinalOpen = false) {
     if (!row) return { kind: 'outside', title: '시뮬레이션 기간 밖', items: [] };
+    if (row.strategy === 'PERIODIC_CONTRIBUTION' || row.strategy === 'LUMP_SUM_BUY_HOLD') {
+      const bought = Number(row.purchase_quantity) > 0;
+      return { kind: bought ? 'entry' : 'holding',
+        title: bought ? (row.strategy === 'PERIODIC_CONTRIBUTION' ? '정기 적립 매수' : '일시금 매수') : '적립식 보유 중',
+        items: [
+          ['입금 · 누적납입금', `${won(row.contribution_amount)} · ${won(row.total_contributions)}`],
+          ['매수가 · 매수수량', bought ? `${won(row.execution_price)} × ${format(row.purchase_quantity)}주` : '추가 매수 없음'],
+          ['총 보유 · 평균매입', `${format(row.position_qty_after)}주 · ${won(row.avg_entry_price_after)}`],
+          ['현금 · 총자산', `${won(row.cash_after)} · ${won(row.portfolio_value)}`],
+          ['누적 손익', signedWon(row.cumulative_gain)],
+        ] };
+    }
     if (isFinalOpen && Number(row.position_qty_after) > 0) {
       return { kind: 'open', title: '미청산 보유', items: [
         ['수량 · 평균매입', `${format(row.position_qty_after)}주 · ${won(row.avg_entry_price_after)}`],

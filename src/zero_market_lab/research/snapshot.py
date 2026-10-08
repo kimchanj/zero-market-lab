@@ -24,7 +24,22 @@ def drawdown(values):
     peak, worst = values[0], 0.0
     for value in values:
         peak = max(peak, value)
-        worst = min(worst, value / peak - 1)
+        if peak > 0:
+            worst = min(worst, value / peak - 1)
+    return worst
+
+
+def cashflow_drawdown(rows, opening_equity):
+    nav = peak = 1.0
+    previous = opening_equity
+    worst = 0.0
+    for row in rows:
+        value = row['portfolio_value']
+        if previous > 0:
+            nav *= (value - row.get('contribution_amount', 0)) / previous
+        peak = max(peak, nav)
+        worst = min(worst, nav / peak - 1)
+        previous = value
     return worst
 
 
@@ -70,6 +85,7 @@ def build_snapshot(simulation: dict, market: list[dict], provider: NewsProvider,
         baseline = previous[-1]["portfolio_value"] if previous else simulation["summary"]["initial_capital"]
         realized_before = previous[-1]["realized_profit_cumulative"] if previous else 0
         last = rows[-1]
+        deposits = sum(row.get("contribution_amount", 0) for row in rows)
         for trade in simulation["trades"]:
             if trade["entry_date"] > last["date"]:
                 continue
@@ -94,15 +110,18 @@ def build_snapshot(simulation: dict, market: list[dict], provider: NewsProvider,
             "start_date": rows[0]["date"], "end_date": last["date"],
             "basis": "Original engine path slice; carry-in position retained; not a fresh simulation",
             "opening_equity": baseline, "closing_equity": last["portfolio_value"],
-            "net_profit": last["portfolio_value"]-baseline,
-            "net_return": last["portfolio_value"]/baseline-1,
+            "net_profit": last["portfolio_value"]-baseline-deposits,
+            "net_return": ((last["portfolio_value"]-baseline-deposits)/(baseline+deposits)
+                           if baseline+deposits else None),
+            "external_contributions_in_window": deposits,
             "realized_profit_change": last["realized_profit_cumulative"]-realized_before,
             "unrealized_profit_end": last["unrealized_profit"],
             "completed_trades": len(closed), "open_trades": int(last["position_qty_after"] > 0),
             "average_holding_days": sum(t["trading_holding_days"] for t in closed)/len(closed) if closed else None,
             "max_holding_days": max((t["trading_holding_days"] for t in closed), default=None),
             "total_cost": sum(row["total_cost"] for row in rows),
-            "mdd": drawdown([baseline, *[row["portfolio_value"] for row in rows]]),
+            "mdd": (cashflow_drawdown(rows, baseline) if simulation['strategy']['strategy_id'] == 'PERIODIC_CONTRIBUTION'
+                    else drawdown([baseline, *[row["portfolio_value"] for row in rows]])),
         }
     news_data = []
     for item in news:
@@ -145,6 +164,12 @@ def markdown(packet: dict, prompt_type="snapshot") -> str:
               "validation": "ZERO MARKET LAB → 금융 검증방 전달 프롬프트",
               "concept": "ZERO MARKET LAB → 금융 개념방 전달 프롬프트"}
     p, instrument, price = packet["selected_period"], packet["instrument"], packet["price_context"]
+    strategy = packet['strategy']
+    strategy_text = (f"매월 {strategy['monthly_amount']:,.0f}원 · 월 첫 거래일 종가 · 분배금 제외"
+                     if strategy['strategy_id'] == 'PERIODIC_CONTRIBUTION' else
+                     "기간 첫 거래일 종가 일시금 매수 · 분배금 제외"
+                     if strategy['strategy_id'] == 'LUMP_SUM_BUY_HOLD' else
+                     f"Entry: Open -{strategy['entry_offset_rate']:.2%}; TP +{strategy['take_profit_rate']:.2%}; 전액 재투자")
     lines = [f"# {titles[prompt_type]}", "", f"Snapshot: {packet['snapshot_id']}",
              "", "## 대상", f"{instrument['display_name']} / {instrument['symbol']} / {instrument['currency']}",
              "", "## 검증 기간", f"요청 {p['start']} ~ {p['end']}; 관측 {p['actual_start']} ~ {p['actual_end']}",
@@ -153,7 +178,7 @@ def markdown(packet: dict, prompt_type="snapshot") -> str:
              f"기간수익률 {price['period_return']:.4%}, 고가 {price['high']:,.2f}, 저가 {price['low']:,.2f}, MDD {price['mdd']:.4%}",
              "변동성: 미산출. Close-to-close price return이며 배당 제외.",
              "", "## 전략 조건", f"원본 초기자금 {packet['initial_capital']:,.2f}; 원본 실행기간 {' ~ '.join(packet['simulation_period'])}",
-             f"Entry: Open -{packet['strategy']['entry_offset_rate']:.2%}; TP +{packet['strategy']['take_profit_rate']:.2%}; 전액 재투자",
+             f"Strategy: {strategy['strategy_id']} · {strategy_text}",
              f"비용 구성: {json.dumps(packet['costs'], ensure_ascii=False)}",
              f"체결 정책: {json.dumps(packet['execution'], ensure_ascii=False)}",
              "", "## 매매 결과", json.dumps(packet['strategy_window'], ensure_ascii=False, indent=2) if packet['strategy_window'] else "선택 구간에 전략 실행 결과 없음; 가격 데이터만 관측됨.",
@@ -176,6 +201,10 @@ def markdown(packet: dict, prompt_type="snapshot") -> str:
                   "개념 설명과 이 구간에서 입증된 사실을 분리하고, 반대 결과가 나올 조건과 확인할 데이터를 제시하세요."]
     else:
         lines += [f"{i}. {question}" for i, question in enumerate(QUESTIONS, 1)]
+        if strategy['strategy_id'] == 'PERIODIC_CONTRIBUTION':
+            lines += ["8. 급락 구간의 추가 매수가 평균매입가에 어떤 영향을 주었는가?",
+                      "9. 일시금 투자와 비교할 때 현금흐름 시점 차이를 어떻게 통제해야 하는가?",
+                      "10. 단순 누적 수익률과 현금흐름 조정 수익률의 해석 차이는 무엇인가?"]
     lines += ["", "## 한계와 Export Data", *[f"- {item}" for item in packet["limitations"]],
               f"- 원본 fingerprint: {packet['source_sha256']}",
               "- JSON export에는 선택 구간 전체 OHLCV와 Ledger, 뉴스 metadata가 포함됩니다. PNG는 별도 차트 캡처입니다."]

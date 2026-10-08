@@ -14,18 +14,30 @@
         <h1 id="instrument-name">데이터 불러오는 중… <span id="instrument-meta"></span></h1>
       </div>
       <div id="status" class="status">데이터 성격 확인 중…</div>
+      <a class="local-only" href="../samsung_strategy_family/">삼성전자 전략 비교</a>
+      <a class="local-only" href="../asset_discovery/">종목 발굴</a>
     </header>
 
     <details class="workspace-section investment-panel" open aria-label="투자조건 입력">
       <summary><span class="step-number">1</span> 투자조건 입력</summary>
       <form id="simulation-form">
+        <fieldset class="strategy-picker"><legend>투자 전략</legend>
+          <label><input type="radio" name="strategy" value="TAKE_PROFIT" checked> 익절 매매</label>
+          <label><input type="radio" name="strategy" value="PERIODIC_CONTRIBUTION"> 정기 적립</label>
+          <label><input type="radio" name="strategy" value="LUMP_SUM_BUY_HOLD"> 일시금 장기보유</label>
+        </fieldset>
         <div class="investment-inputs">
           <label>투자 시작일<input id="invest-start" type="date" required></label>
           <label>투자 종료일<input id="invest-end" type="date" required></label>
           <label>초기 투자금 (원)<input id="invest-capital" type="text" inputmode="decimal" value="500,000" required></label>
-          <label>매수 지정가 (%)<div class="input-affix"><span>시가 −</span><input id="invest-entry" type="number" value="1" min="0" max="50" step="0.1" required></div></label>
-          <label>익절 목표 (%)<div class="input-affix"><span>매수가 +</span><input id="invest-tp" type="number" value="5" min="0.01" max="100" step="0.01" required></div></label>
-          <label>최소 순수익 (%)<input id="invest-minimum" type="number" value="1" min="0" max="100" step="0.1" required></label>
+          <label class="take-profit-input">매수 지정가 (%)<div class="input-affix"><span>시가 −</span><input id="invest-entry" type="number" value="1" min="0" max="50" step="0.1" required></div></label>
+          <label class="take-profit-input">익절 목표 (%)<div class="input-affix"><span>매수가 +</span><input id="invest-tp" type="number" value="5" min="0.01" max="100" step="0.01" required></div></label>
+          <label class="take-profit-input">최소 순수익 (%)<input id="invest-minimum" type="number" value="1" min="0" max="100" step="0.1" required></label>
+          <label class="periodic-input" hidden>정기 투자금 (원)<input id="invest-contribution" type="text" inputmode="decimal" value="500,000"></label>
+          <label class="periodic-input" hidden>투자 주기<select id="invest-frequency"><option value="MONTHLY">매월</option></select></label>
+          <label class="periodic-input" hidden>매수 시점<select id="invest-timing"><option value="FIRST_TRADING_DAY">월 첫 거래일 종가</option></select></label>
+          <label class="periodic-input" hidden>분배금 재투자<input type="text" value="현재 데이터 미지원" disabled></label>
+          <label class="lump-input" hidden>매수 시점<input type="text" value="기간 첫 거래일 종가" disabled></label>
         </div>
         <div class="run-toolbar"><div class="period-buttons" aria-label="투자 빠른 기간">
           <button type="button" data-invest-months="1">1개월</button><button type="button" data-invest-months="3">3개월</button>
@@ -33,7 +45,7 @@
           <button type="button" id="all-invest-period">전체</button>
           <button type="button" id="custom-period" class="active">직접입력</button>
         </div><button type="submit" id="run-simulation" class="primary">시뮬레이션 실행</button></div>
-        <p class="input-note">기본 기간은 올해 1월 1일~오늘(한국시간)입니다. 빠른 기간은 오늘부터 역산해 입력 날짜를 바꿉니다. 적용하려면 실행을 누르세요. 실제 관측 종료일은 데이터 최신일에 따라 앞설 수 있습니다. 최소 순수익은 수수료·세금 차감 후 확보하고 싶은 수익률의 평가 기준이며 익절 주문을 변경하지 않습니다.</p>
+        <p class="input-note">기본 기간은 올해 1월 1일~오늘(한국시간)입니다. 빠른 기간은 오늘부터 역산합니다. 실제 관측 종료일은 데이터 최신일에 따라 앞설 수 있습니다. 정기 적립은 매월 첫 관측 거래일 종가에 매수하고 잔여현금을 이월합니다. 분배금은 제외됩니다.</p>
         <p id="run-status" role="status">기본 시나리오를 불러오는 중…</p>
       </form>
     </details>

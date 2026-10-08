@@ -3,7 +3,8 @@
 ZERO MARKET LAB의 현재 공식 프로젝트 URL은
 https://github.com/kimchanj/zero-market-lab 이다. 현재 V2는 Python 서버의
 `/api/simulate`, `/api/research`를 사용하는 로컬 연구 앱이다. 저장소 URL은 실행 가능한
-웹 앱 주소가 아니며, 이번 단계에서 GitHub Pages나 외부 호스팅을 제공하지 않는다.
+웹 앱 주소가 아니다. 별도 GitHub Pages 읽기 전용 데모에는 합성 시세와 사전 계산
+결과만 게시하며, Python API를 사용하는 새 시뮬레이션·뉴스 조회는 로컬에만 남긴다.
 
 ## 로컬 실행 모드
 
@@ -29,3 +30,7 @@ https://github.com/kimchanj/zero-market-lab 이다. 현재 V2는 Python 서버�
   Git 제외 대상이다.
 - 합성 데이터는 실제 TIGER 가격·수익률·시장 사건을 재현하지 않으며 투자 판단 자료로
   사용해서는 안 된다.
+
+GitHub Pages 산출물은 `scripts/build_pages_demo.py`가 별도 생성한다. 생성물은
+`artifacts/`에 두어 Git 추적에서 제외하고, Actions가 실행할 때 합성 데이터만 만들어
+Pages artifact로 업로드한다. 실제 데이터 파일이나 `research_input.json`은 게시하지 않는다.

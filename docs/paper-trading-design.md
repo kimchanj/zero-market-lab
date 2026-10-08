@@ -1,0 +1,9 @@
+# Paper Trading / daily journal design — interface only
+
+Proposed models: `PaperAccount`, `PaperPosition`, `PaperOrder`, `PaperExecution`, `PaperDecision`, and `PaperJournalEntry`. The first account will be `ISA Strategy Lab`, 500,000 KRW, at most one open position, manually selected 1–3 discovery candidates. Discovery never places orders. No brokerage or real ISA connection is in scope.
+
+The append-only daily workflow is: record requested KST date and last **actual KRX observation date**, load newly available OHLCV, calculate a versioned signal using only known observations, create a hypothetical order, apply the common fee model and explicit zero-slippage assumption, update cash/quantity/average cost and realized/unrealized P&L, then append a journal entry. A backtest replay cannot be relabeled as paper evidence. A strategy change creates a new version and full config snapshot/hash; it never rewrites old decisions or fills.
+
+Journal fields: timestamps, instrument/symbol, strategy ID/version/config hash, market state and OHLCV, signal/action/order type and price, execution status/price/quantity, cash/quantity before and after, average cost, portfolio value, realized/unrealized P&L, reason code and plain-language explanation. UI maps internal states to 관찰 중 / 매수 대기 / 매수 신호 / 매수 완료 / 보유 중 / 매도 신호 / 매도 완료. Persist entries across restarts, likely with SQLite, and make repeated daily runs idempotent by account, symbol, market date, and strategy version. Corrections should be appended as separate audit records.
+
+Evidence remains separated as Historical Backtest, Walk-Forward, and Paper Trading. Dashboard periods 1M/3M/6M require actual forward observations; absent windows show insufficient evidence. The eventual lifecycle is RESEARCH → BACKTESTED → WALK_FORWARD → PAPER_TRADING → RETIRED; the system never automatically decides real investment eligibility. These are design contracts, **not implemented paper trading**.

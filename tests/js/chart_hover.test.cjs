@@ -75,3 +75,13 @@ test('insufficient cash is explained without exposing an internal code', () => {
   assert.equal(values(hover)['미체결 이유'], '매수 가능 수량을 채울 현금이 부족합니다');
   assert.doesNotMatch(JSON.stringify(hover), /INSUFFICIENT_CASH/);
 });
+
+test('periodic contribution hover separates deposits from investment gain', () => {
+  const hover = model(row({strategy:'PERIODIC_CONTRIBUTION', contribution_amount:500000,
+    total_contributions:1000000, purchase_quantity:19, execution_price:25000,
+    position_qty_after:39, avg_entry_price_after:24700, cash_after:37000,
+    portfolio_value:1016000, cumulative_gain:16000}));
+  assert.equal(hover.title, '정기 적립 매수');
+  assert.equal(values(hover)['입금 · 누적납입금'], '500,000원 · 1,000,000원');
+  assert.equal(values(hover)['누적 손익'], '+16,000원');
+});

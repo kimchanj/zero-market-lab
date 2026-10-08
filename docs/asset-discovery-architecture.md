@@ -1,0 +1,30 @@
+# Asset Discovery architecture — research-first foundation
+
+The priority changed from chart refinement to **decision, ledger, evidence, reproducibility**. The existing TIGER V2, Samsung Strategy Family, chart, explanation ledger, and static synthetic Pages preparation remain intact. Asset Discovery is historical screening, **not** an order instruction or a permanent asset label.
+
+## Current vertical slice
+
+`config/universe_seed_kr_us.json` names three KRX assets (Samsung, SK hynix, NAVER) and three US assets (NVIDIA, Microsoft, Apple). This is a representative research seed, not an investment recommendation, historical index membership, or a point-in-time market-cap ranking. It carries survivorship and universe-selection bias. All six have local actual-price caches on this machine; these are Git-ignored and not portable to another machine. Missing assets show `DATA_UNAVAILABLE` with the required import path, never invented returns. Expanding to 10/30/50 symbols is deferred.
+
+`LocalOHLCVCatalog` loads and caches each symbol once per research run. The existing generic `FrameOHLCVProvider` remains inside `run_family`; strategies do not depend on Daum Finance or Yahoo. Data after `evaluation_date` is removed before behavior analysis and simulation. The first 100 earlier trading observations warm up S4. Each market uses its native currency and a separate initial balance: 500,000 KRW for KRX, 500 USD for US. No cross-currency NAV or ranking is produced. KRX uses its stock price-band ticks and zero decimal currency precision; US uses $0.01 quotes and two decimal currency precision. Both use integer shares, single position, zero leverage, no short sales, and explicitly labeled research fee/tax assumptions. Realized proceeds stay in cash and can fund later entries. The engine calculates indicators once per asset for all nine strategy variants. One bad asset or one failing strategy cell does not cancel the run.
+
+Integer shares make $500 insufficient to enter some high-priced US assets at the first evaluation open (MSFT S0 in the current sample). Its 0% S0 result is a **cash-only outcome**, not evidence of a flat stock. The page names this constraint. Users can adjust US starting capital and rerun, but should compare strategies within the same capital assumption.
+
+`AssetBehaviorProfile` records daily/annual volatility, ATR%, range%, ≥2/3/5% move counts, trend streaks, five-session MA20 slope, 3/5/10-session post-drop rebound rates, lower-Bollinger-band five-session mean reversion, 20-session-high breakout event counts and 5/10-session forward outcomes, drawdown depth/duration, gap frequency, and liquidity. Breakout outcomes near the evaluation boundary are excluded, never completed with future prices. An unfinished drawdown contributes to duration but **not** completed recovery. Breakout and rebound outcomes are descriptive measures computed inside the historical window; no trading signal uses their future outcomes.
+
+`ResearchRun` records run ID, UTC creation timestamp, requested/actual period, market-specific initial capital, instrument metadata, source URL/retrieval/adjustment metadata, row count, source data SHA-256, fee assumptions, strategy source hash, engine version, and input hash. `StrategyAssetResult` cells store the full common metrics, with raw return/risk/trade-quality/efficiency fields rather than a weighted score. A missing profit factor remains undefined. JSON and CSV export are local ignored artifacts. Missing KRX/US sessions cannot yet be reconciled without exchange calendars; `missing_days` is explicitly null.
+
+The local page `/asset_discovery/` permits ALL/KRX/US market filtering, strategy and lookback selection, market-specific capital, minimum trades, MDD floor, PF floor, liquidity threshold, market-separated sortable candidates, data availability, and the selected asset's nine-strategy matrix. It labels results as historical fit candidates and shows actual data availability. The API endpoint `/api/asset-discovery` is enabled only in `LOCAL_RESEARCH`; GitHub Pages remains a separate synthetic read-only demo.
+
+## Run locally
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_asset_discovery.py --as-of 2026-10-08 --lookback 1Y
+.\.venv\Scripts\python.exe scripts/run_research_ui.py --port 8066
+```
+
+Open `http://127.0.0.1:8066/asset_discovery/`. The CLI writes `artifacts/asset_discovery/research_run.json` and `matrix.csv`; these and all downloaded OHLCV files are Git-ignored. `scripts/fetch_korea_universe.py --symbols 005930 000660 035420` and `scripts/fetch_us_seed.py --symbols NVDA MSFT AAPL --range 2y` import the six local seeds. Common OHLCV fields are `date,open,high,low,close,volume`; optional `adjusted_close,trading_value` remain separate from executable quotes. `metadata.json` records provider, retrieval, currency, timezone, adjustment status, actual dates, row count, and response hash. The local catalogue also accepts `ohlcv.csv`, `ohlcv.json` (records), or `ohlcv.parquet` under the same symbol/snapshot path without network access; a manifest should accompany manual imports. KRX cache currently has 500 rows/asset through 2026-10-08; US cache has 501 rows/asset through 2026-10-07, the last actual US observation at the 2026-10-08 KST run. Yahoo's provider quote OHLC is labeled as having **unverified split treatment**; adjusted close is supplemental and dividends are excluded. No split event was reported in the fetched two-year US responses. Provider redistribution rights, corporate-action semantics, and point-in-time universe membership require review before broader historical inference.
+
+## Next phases
+
+Walk-Forward must freeze the universe, strategy version, filters, and selection rule using training information only. Paper Trading must append date-stamped decisions using data available at decision time. Their interfaces and invariants are described in [walk-forward-design.md](walk-forward-design.md) and [paper-trading-design.md](paper-trading-design.md); neither is implemented by this vertical slice. S8/S9, parameter optimization, brokerage integration, and chart UX expansion are deferred.

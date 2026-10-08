@@ -6,6 +6,7 @@ import json
 import pandas as pd
 
 from .engine import simulate
+from .accumulation import run_accumulation
 from .execution import required_exit_price
 from .models import Instrument, StrategyParameters, ExecutionConfig, CostConfig
 from .provider import FrameOHLCVProvider
@@ -30,23 +31,42 @@ def run_simulation(bundle: dict, params: dict) -> dict:
     start,end=date.fromisoformat(params['start']),date.fromisoformat(params['end'])
     if start > end:
         raise ValueError('투자 시작일은 종료일보다 늦을 수 없습니다.')
-    seed=number(params,'initial_capital','500000',Decimal('1'),Decimal('1e12'))
-    entry=number(params,'entry_percent','1',Decimal('0'),Decimal('50'))/100
-    tp=number(params,'take_profit_percent','5',Decimal('.01'),Decimal('100'))/100
-    minimum=number(params,'minimum_net_percent','1',Decimal('0'),Decimal('100'))/100
+    strategy_id=params.get('strategy_id','TAKE_PROFIT')
+    if strategy_id not in {'TAKE_PROFIT','PERIODIC_CONTRIBUTION','LUMP_SUM_BUY_HOLD'}:
+        raise ValueError('지원하지 않는 투자 전략입니다.')
+    seed=number(params,'initial_capital','0' if strategy_id=='PERIODIC_CONTRIBUTION' else '500000',
+                Decimal('0') if strategy_id=='PERIODIC_CONTRIBUTION' else Decimal('1'),Decimal('1e12'))
     meta=dict(bundle['simulation']['instrument'])
     for key in ('tick_size','lot_size'):
         meta[key]=Decimal(str(meta[key]))
     instrument=Instrument(**meta)
     raw_costs=bundle['simulation']['costs']
     costs=CostConfig(**{k: v if k=='label' else Decimal(str(v)) for k,v in raw_costs.items()})
-    strategy=StrategyParameters(entry_offset_rate=entry,take_profit_rate=tp)
     try:
         bars=FrameOHLCVProvider(pd.DataFrame(bundle['market'])).load_ohlcv(instrument,start,end)
     except ValueError as error:
         if str(error) == 'No OHLCV bars in requested range':
             raise ValueError('선택한 투자기간에 실제 OHLCV 관측값이 없습니다.') from error
         raise
+    if strategy_id != 'TAKE_PROFIT':
+        monthly=(number(params,'contribution_amount','500000',Decimal('0'),Decimal('1e12'))
+                 if strategy_id=='PERIODIC_CONTRIBUTION' else Decimal('0'))
+        if params.get('frequency','MONTHLY') != 'MONTHLY' or params.get('purchase_timing','FIRST_TRADING_DAY') != 'FIRST_TRADING_DAY':
+            raise ValueError('현재는 매월 첫 거래일 매수만 지원합니다.')
+        payload=run_accumulation(instrument,bars,seed,monthly,costs,strategy_id)
+        payload['scope']={
+            'requested_period':[start.isoformat(),end.isoformat()],
+            'actual_period':[bars[0].timestamp.date().isoformat(),bars[-1].timestamp.date().isoformat()],
+            'initial_capital':float(seed),'parameter_search':False,
+            'fee_disclaimer':bundle['simulation'].get('fee_disclaimer','분배금 제외 · 종가 체결 연구 가정'),
+        }
+        payload['provenance']=bundle['simulation'].get('provenance',{})
+        payload['run_id']=sha256(json.dumps(payload,sort_keys=True,ensure_ascii=False).encode()).hexdigest()[:20]
+        return payload
+    entry=number(params,'entry_percent','1',Decimal('0'),Decimal('50'))/100
+    tp=number(params,'take_profit_percent','5',Decimal('.01'),Decimal('100'))/100
+    minimum=number(params,'minimum_net_percent','1',Decimal('0'),Decimal('100'))/100
+    strategy=StrategyParameters(entry_offset_rate=entry,take_profit_rate=tp)
     result=simulate(instrument=instrument,bars=bars,initial_capital=seed,
                     strategy=strategy,execution=ExecutionConfig(),costs=costs)
     payload=result.to_dict()

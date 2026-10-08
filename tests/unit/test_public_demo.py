@@ -42,6 +42,12 @@ def test_public_server_uses_synthetic_assets_engine_and_empty_news(tmp_path: Pat
     origin = root
     try:
         assert b"PUBLIC_DEMO" in urlopen(root + "/tiger_etf_v2/tiger_data.js").read()
+        with pytest.raises(HTTPError) as blocked_samsung:
+            urlopen(root + "/api/samsung-family")
+        assert blocked_samsung.value.code == 404
+        with pytest.raises(HTTPError) as blocked_discovery:
+            urlopen(root + "/api/asset-discovery")
+        assert blocked_discovery.value.code == 404
         try:
             urlopen(root + "/tiger_etf_v2/research_input.json")
             assert False, "Private demo bundle was publicly served"
