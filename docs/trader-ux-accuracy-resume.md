@@ -118,3 +118,17 @@
 - 전체 Python **272 passed**, JavaScript **9 passed**, `pip check`, `node --check`, `git diff --check` 통과. 문서의 현재 구현 상태와 README 링크, `.gitignore`의 SQLite 예외만 최소 수정했다.
 - 삼성전자 2026-10-06~08 역사 재생을 새 계좌로 반복 검증했다. 3개 Journal·3개 Decision·3개 Order·1개 Execution, 재실행 중복 0, 재시작 후 Cash 233,460원·1주·총자산 496,460원·미실현손익 −3,540원이다. 증거 유형은 오직 `HISTORICAL_REPLAY`다.
 - 기존 변경과 감사 산출물은 모두 미커밋으로 보존했다. 사용자 Checkpoint Commit 승인과 Push 승인은 별개이며 아직 어느 쪽도 진행하지 않았다.
+
+## 2026-10-11 STEP 6 — 첫 LIVE_FORWARD Pilot 준비 점검
+
+- 로컬 Checkpoint `d1ce2f2cd48693727644a443688c06b95c05fc48`에서 시작했다. `origin/main`보다 1 commit 앞서며, 이번 STEP에서 push하지 않는다. 이전 Milestone 연구·Phase·Strategy·Paper 계약은 변경하지 않았다.
+- 사용자가 Pilot 후보로 `000660` SK하이닉스를 선택했다. [Pilot 로그](live-forward-pilot-01.md)에 기존 Daum 보조 공급자 재조회, 검증된 마지막 일봉 2026-10-08, 이전 CSV와 해시 동일, 1주 필요자금 1,686,253원, 계좌 미생성 상태를 기록했다.
+- 2026-10-11은 일요일이고 새 계좌 생성 이후의 확정 일봉이 없다. 따라서 **`LIVE_FORWARD_BLOCKED_BY_DATA_REFRESH`**이며 역사 일봉을 Forward Decision으로 재사용하지 않았다. 비용 가정의 최종 확인과 새로운 거래일의 장 종료 후 공급자 refresh가 있어야 첫 Decision/Journal을 시작할 수 있다.
+- 같은 날 사용자는 초기 모의투자금으로 **10,000,000 KRW**를 지정했다. 직전 종가 기준 1주 필요자금은 1,686,253 KRW이며 기본 수수료를 적용한 단순 매수 가능 수량은 5주다. 이는 미래 체결 수량 보장이 아니다. 데이터가 새로 확정될 때까지 계좌 미생성 상태를 유지한다.
+- 수집기가 1,500행 rolling 창을 그대로 저장하면 다음 날 Paper 전체 이력 해시가 깨질 수 있어, 겹치는 과거 행을 검증하고 신규 행만 누적하는 최소 수정을 추가했다. 누락·수정된 과거 바는 거부하며 단위 테스트를 통과했다. 실제 신규 일봉 append와 사용자 검토 전에는 계좌를 만들지 않는다.
+
+## 2026-10-11 STEP 6A — LIVE 데이터 갱신 안전성 Checkpoint
+
+- 로컬 기준선 `d1ce2f2cd48693727644a443688c06b95c05fc48`에서 STEP 6 관련 4개 파일만 감사했다. [Pilot 로그](live-forward-pilot-01.md)에 `000660` SK하이닉스·모의자본 10,000,000 KRW·`LIVE_FORWARD_BLOCKED_BY_DATA_REFRESH`·계좌 미생성 상태를 유지한다.
+- Daum의 rolling 1,500행과 로컬 누적 이력을 비교해 기존 행을 보존한다. 과거 날짜/값이 바뀌거나 빠지면 `DATA_HISTORY_CHANGED`와 비영 종료코드로 중단한다. 새 CSV는 검증된 별도 폴더에서 마지막에 공개하므로 기존 이력을 덮어쓰지 않는다. 원천 응답·누적 이력 해시와 이전/추가 행 수를 메타데이터에 기록한다.
+- 2026-10-11 실제 재조회에서 추가 행 0, 마지막 확정 일봉 **2026-10-08**을 확인했다. 다음은 새로운 확정 거래일 수집 및 이력 연속성 검증이다. 아직 계좌·Phase Snapshot·Decision·Journal은 없으며 STEP 6B를 시작하지 않는다. `UNADJUSTED` 기업행동 정정과 거래소 달력 대조는 남은 위험이다.
