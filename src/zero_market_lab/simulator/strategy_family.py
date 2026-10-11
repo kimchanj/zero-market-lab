@@ -14,9 +14,10 @@ from statistics import mean, median
 import pandas as pd
 
 from zero_market_lab.tiger_v2.data import validate_ohlcv
-from .execution import ConfigurableFeeModel
+from .execution import ConfigurableFeeModel, affordable_quantity, required_buy_cash, quantize_money
 from .models import CostConfig, Instrument
 from .provider import FrameOHLCVProvider
+from .entry_filter import MA200TrendFilter, NoFilter, SMA100Filter
 
 
 STRATEGIES = (
@@ -24,6 +25,7 @@ STRATEGIES = (
     "S3_FIXED_TP_SL_TIME", "S4_TREND_FILTERED_TP_SL_TIME",
     "S5_ATR_ADAPTIVE_EXIT", "S6A_PURE_MEAN_REVERSION",
     "S6B_CONFIRMED_REVERSAL", "S7_BREAKOUT_TREND_FOLLOWING",
+    "S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL",
 )
 
 
@@ -49,6 +51,13 @@ def _to_tick(price: Decimal, *, up: bool, stock: bool, default_tick: Decimal) ->
     return candidate
 
 
+def required_gain_to_recover(drawdown_fraction: float) -> float | None:
+    """Gain on trough capital required to regain the pre-drawdown peak."""
+    if not -1 <= drawdown_fraction <= 0:
+        raise ValueError("Drawdown must be between -1 and 0")
+    return 1/(1+drawdown_fraction)-1 if drawdown_fraction > -1 else None
+
+
 def _indicators(frame: pd.DataFrame) -> pd.DataFrame:
     data = frame.copy()
     for key in ("open", "high", "low", "close", "volume"):
@@ -62,6 +71,9 @@ def _indicators(frame: pd.DataFrame) -> pd.DataFrame:
     data["ma20"] = close.rolling(20, min_periods=20).mean()
     data["std20"] = close.rolling(20, min_periods=20).std(ddof=0)
     data["ma100_prior"] = close.rolling(100, min_periods=100).mean().shift(1)
+    ma200 = close.rolling(200, min_periods=200).mean()
+    data["ma200_prior"] = ma200.shift(1)
+    data["ma200_prior_5ago"] = ma200.shift(6)
     data["close_prior"] = previous_close
     data["high_prior"] = high.shift(1)
     data["high20_prior"] = high.rolling(20, min_periods=20).max().shift(1)
@@ -70,18 +82,45 @@ def _indicators(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 @dataclass(frozen=True)
+class FixedTakeProfitConfig:
+    entry_offset_pct: Decimal = Decimal("-1.0")
+    take_profit_pct: Decimal = Decimal("5.0")
+
+
+@dataclass(frozen=True)
+class FixedStopConfig:
+    take_profit_pct: Decimal = Decimal("5.0")
+    stop_loss_pct: Decimal = Decimal("3.0")
+
+
+@dataclass(frozen=True)
 class FamilyConfig:
     initial_capital: Decimal = Decimal(500000)
     costs: CostConfig = CostConfig(buy_fee_rate=Decimal("0.00015"),
                                    sell_fee_rate=Decimal("0.00015"), sell_tax_rate=Decimal(0))
     stock_price_bands: bool = True
+    s1: FixedTakeProfitConfig = FixedTakeProfitConfig()
+    s2: FixedStopConfig = FixedStopConfig()
+    slippage_rate: Decimal = Decimal(0)
 
 
 def run_family(frame: pd.DataFrame, instrument: Instrument, start: date, end: date,
-               config: FamilyConfig | None = None, *, isolate_errors: bool = False) -> dict:
+               config: FamilyConfig | None = None, *, isolate_errors: bool = False,
+               strategies: tuple[str, ...] | None = None) -> dict:
     config = config or FamilyConfig()
+    selected_strategies = STRATEGIES if strategies is None else tuple(strategies)
+    if not selected_strategies or len(set(selected_strategies)) != len(selected_strategies) or any(
+        name not in STRATEGIES for name in selected_strategies
+    ):
+        raise ValueError("Invalid strategy subset")
     if start > end or config.initial_capital <= 0:
         raise ValueError("Invalid evaluation period or capital")
+    if (not Decimal("-20") <= config.s1.entry_offset_pct <= 0 or
+        not 0 < config.s1.take_profit_pct <= Decimal("100") or
+        not 0 < config.s2.take_profit_pct <= Decimal("100") or
+        not 0 < config.s2.stop_loss_pct < Decimal("100") or
+        not 0 <= config.slippage_rate <= Decimal("0.05")):
+        raise ValueError("Invalid S1 or slippage configuration")
     if instrument.fractional_allowed or instrument.lot_size != 1:
         raise ValueError("This family comparison requires integer shares")
     market = frame.copy().sort_values("date").reset_index(drop=True)
@@ -102,8 +141,12 @@ def run_family(frame: pd.DataFrame, instrument: Instrument, start: date, end: da
     if first < 100:
         raise ValueError("100 prior trading observations are required for S4 warm-up")
     results = {}
-    for name in STRATEGIES:
+    for name in selected_strategies:
         try:
+            if name in {"S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL"} and first < 205:
+                results[name] = {"strategy": name, "status": "INSUFFICIENT_DATA",
+                                 "reason": "205_PRIOR_TRADING_OBSERVATIONS_REQUIRED", "metrics": None}
+                continue
             results[name] = _run_one(data, instrument, first, last, config, name)
         except Exception as error:
             if not isolate_errors:
@@ -120,7 +163,12 @@ def run_family(frame: pd.DataFrame, instrument: Instrument, start: date, end: da
         "capital": float(config.initial_capital),
         "costs": {"buy_fee_rate": float(config.costs.buy_fee_rate),
                   "sell_fee_rate": float(config.costs.sell_fee_rate),
-                  "sell_tax_rate": float(config.costs.sell_tax_rate)},
+                  "sell_tax_rate": float(config.costs.sell_tax_rate),
+                  "slippage_rate": float(config.slippage_rate)},
+        "s1_config": {"entry_offset_pct": float(config.s1.entry_offset_pct),
+                      "take_profit_pct": float(config.s1.take_profit_pct)},
+        "s2_config": {"take_profit_pct": float(config.s2.take_profit_pct),
+                      "stop_loss_pct": float(config.s2.stop_loss_pct)},
         "results": results,
         "warning": "최근 6개월 historical sample 결과이며 시장 레짐에 따라 달라질 수 있습니다.",
     }
@@ -130,7 +178,7 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
              config: FamilyConfig, name: str) -> dict:
     fees = ConfigurableFeeModel(config.costs, instrument.currency_precision)
     cash, qty = config.initial_capital, Decimal(0)
-    entry_price = entry_notional = entry_fee = Decimal(0)
+    entry_price = entry_notional = entry_fee = entry_slip = Decimal(0)
     entry_index = -1
     entry_atr = None
     stop = target = None
@@ -140,37 +188,51 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
     stop_count = time_count = whipsaws = 0
     exposure_days = 0
     total_cost = Decimal(0)
+    total_buy_fee = total_sell_fee = total_tax = total_slippage = Decimal(0)
     entry_atrs, atr_percents, tp_distances, sl_distances = [], [], [], []
     forward_returns = {1: [], 3: [], 5: [], 10: []}
     monthly_reversals: dict[str, int] = {}
+    affordability_events = []
+    blocked_entries = []
+    cash_days = entry_filter_pass_count = entry_filter_fail_count = entry_blocked_days = 0
+    blocked_after_exit = False
 
     def price(value): return Decimal(str(value))
     def rounded(value, up=False):
         return _to_tick(value, up=up, stock=config.stock_price_bands,
                         default_tick=instrument.tick_size)
     def buy(fill: Decimal, idx: int, atr=None):
-        nonlocal cash, qty, entry_price, entry_notional, entry_fee, entry_index, entry_atr, stop, target, total_cost
+        nonlocal cash, qty, entry_price, entry_notional, entry_fee, entry_slip
+        nonlocal entry_index, entry_atr, stop, target, total_cost, total_buy_fee, total_slippage
         unit = instrument.lot_size
-        estimate = (cash / fill / unit).to_integral_value(rounding=ROUND_FLOOR) * unit
-        while estimate > 0 and estimate * fill + fees.buy_fee(estimate * fill) > cash:
-            estimate -= unit
+        estimate = affordable_quantity(cash, fill, unit, fees, config.slippage_rate)
         if estimate <= 0:
             return Decimal(0), Decimal(0)
         qty = estimate
         entry_price = fill
         entry_notional = qty * fill
         entry_fee = fees.buy_fee(entry_notional)
-        cash -= entry_notional + entry_fee
-        total_cost += entry_fee
+        entry_slip = quantize_money(entry_notional * config.slippage_rate,
+                                    instrument.currency_precision)
+        cash -= entry_notional + entry_fee + entry_slip
+        total_buy_fee += entry_fee
+        total_slippage += entry_slip
+        total_cost += entry_fee + entry_slip
         entry_index = idx
         entry_atr = atr
         if atr is not None:
             entry_atrs.append(float(atr))
             atr_percents.append(float(atr / fill))
-        if name in {"S1_FIXED_TAKE_PROFIT", "S2_FIXED_TP_SL", "S3_FIXED_TP_SL_TIME",
-                    "S4_TREND_FILTERED_TP_SL_TIME"}:
-            target = rounded(fill * Decimal("1.05"), up=True)
-            stop = rounded(fill * Decimal("0.97")) if name != "S1_FIXED_TAKE_PROFIT" else None
+        if name in {"S1_FIXED_TAKE_PROFIT", "S1_TREND_FILTERED_TAKE_PROFIT",
+                    "S2_FIXED_TP_SL", "S2_TREND_FILTERED_TP_SL",
+                    "S3_FIXED_TP_SL_TIME", "S4_TREND_FILTERED_TP_SL_TIME"}:
+            s1_style = name in {"S1_FIXED_TAKE_PROFIT", "S1_TREND_FILTERED_TAKE_PROFIT"}
+            s2_style = name in {"S2_FIXED_TP_SL", "S2_TREND_FILTERED_TP_SL"}
+            tp = (config.s1.take_profit_pct if s1_style else
+                  config.s2.take_profit_pct if s2_style else Decimal(5))
+            target = rounded(fill * (Decimal(1) + tp / 100), up=True)
+            stop_pct = config.s2.stop_loss_pct if s2_style else Decimal(3)
+            stop = rounded(fill * (Decimal(1) - stop_pct / 100)) if not s1_style else None
         elif name == "S5_ATR_ADAPTIVE_EXIT" and atr is not None:
             target = rounded(fill + 3 * atr, up=True)
             stop = rounded(fill - 2 * atr)
@@ -181,30 +243,42 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
             target = stop = None
         if target: tp_distances.append(float(target / fill - 1))
         if stop: sl_distances.append(float(1 - stop / fill))
-        return estimate, entry_fee
+        return estimate, entry_fee + entry_slip
 
     def sell(fill: Decimal, idx: int, reason: str):
-        nonlocal cash, qty, entry_index, total_cost, stop_count, time_count, whipsaws, stop, target
+        nonlocal cash, qty, entry_index, total_cost, total_sell_fee, total_tax, total_slippage
+        nonlocal stop_count, time_count, whipsaws, stop, target
         proceeds = qty * fill
         fee = fees.sell_fee(proceeds)
         tax = fees.tax(proceeds)
-        cash += proceeds - fee - tax
-        total_cost += fee + tax
-        pnl = proceeds - fee - tax - entry_notional - entry_fee
+        sell_slip = quantize_money(proceeds * config.slippage_rate,
+                                   instrument.currency_precision)
+        cash += proceeds - fee - tax - sell_slip
+        total_sell_fee += fee
+        total_tax += tax
+        total_slippage += sell_slip
+        total_cost += fee + tax + sell_slip
+        gross_pnl = proceeds - entry_notional
+        pnl = gross_pnl - entry_fee - entry_slip - fee - tax - sell_slip
         trades.append({"entry_date": pd.Timestamp(data.iloc[entry_index]["date"]).date().isoformat(),
                        "exit_date": pd.Timestamp(data.iloc[idx]["date"]).date().isoformat(),
                        "entry_price": float(entry_price), "exit_price": float(fill),
-                       "quantity": float(qty), "net_profit": float(pnl),
-                       "net_return": float(pnl/(entry_notional+entry_fee)),
+                       "quantity": float(qty), "gross_profit": float(gross_pnl),
+                       "gross_return": float(gross_pnl/entry_notional),
+                       "net_profit": float(pnl),
+                       "net_return": float(pnl/(entry_notional+entry_fee+entry_slip)),
                        "holding_days": idx-entry_index+1, "exit_reason": reason,
-                       "cost": float(entry_fee+fee+tax)})
+                       "buy_fee": float(entry_fee), "sell_fee": float(fee),
+                       "sell_tax": float(tax),
+                       "slippage_cost": float(entry_slip+sell_slip),
+                       "cost": float(entry_fee+entry_slip+fee+tax+sell_slip)})
         if reason == "STOP_LOSS": stop_count += 1
         if reason == "TIME_STOP": time_count += 1
         if name == "S7_BREAKOUT_TREND_FOLLOWING" and pnl < 0: whipsaws += 1
         qty = Decimal(0)
         entry_index = -1
         stop = target = None
-        return fee + tax
+        return fee + tax + sell_slip
 
     for idx in range(first, last + 1):
         row = data.iloc[idx]
@@ -233,13 +307,30 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
             bought, fee = buy(fill, idx)
             fee_today += fee
             if bought: action, reason, entered_today = "BUY", "평가 첫 거래일 시가", True
-        elif name in STRATEGIES[1:6] and qty == 0 and not exited_today:
-            eligible = True
+            else:
+                affordability_events.append({"event_date": day, "available_cash": float(cash),
+                    "required_cash": float(required_buy_cash(instrument.lot_size, fill, fees, config.slippage_rate)),
+                    "reference_price": float(fill), "required_qty": float(instrument.lot_size),
+                    "reason": "INITIAL_ENTRY_BLOCKED_BY_CAPITAL"})
+        elif name in {"S1_FIXED_TAKE_PROFIT", "S2_FIXED_TP_SL", "S3_FIXED_TP_SL_TIME",
+                      "S4_TREND_FILTERED_TP_SL_TIME", "S5_ATR_ADAPTIVE_EXIT",
+                      "S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL"} and qty == 0 and not exited_today:
+            entry_filter = (MA200TrendFilter() if name in {"S1_TREND_FILTERED_TAKE_PROFIT",
+                         "S2_TREND_FILTERED_TP_SL"} else SMA100Filter() if name ==
+                         "S4_TREND_FILTERED_TP_SL_TIME" else NoFilter())
+            eligible = entry_filter.allows(row)
+            if name in {"S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL"}:
+                entry_filter_pass_count += int(eligible)
+                entry_filter_fail_count += int(not eligible)
+                entry_blocked_days += int(not eligible)
+                if not eligible:
+                    reason = "장기 추세 필터 조건 미충족 · 현금 대기"
             if name == "S4_TREND_FILTERED_TP_SL_TIME":
-                eligible = bool(pd.notna(row["ma100_prior"]) and row["close_prior"] > row["ma100_prior"])
                 trend_pass += int(eligible)
                 trend_fail += int(not eligible)
-            limit = rounded(opn * Decimal("0.99"))
+            offset = config.s1.entry_offset_pct if name in {"S1_FIXED_TAKE_PROFIT",
+                      "S1_TREND_FILTERED_TAKE_PROFIT"} else Decimal("-1")
+            limit = rounded(opn * (Decimal(1) + offset / 100))
             if low <= limit:
                 if eligible:
                     atr = price(row["atr14_prior"]) if name == "S5_ATR_ADAPTIVE_EXIT" and pd.notna(row["atr14_prior"]) else None
@@ -247,9 +338,27 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
                         fill = limit
                         bought, fee = buy(fill, idx, atr)
                         fee_today += fee
-                        if bought: action, reason, entered_today = "BUY", "Open -1% 지정가", True
+                        if bought:
+                            action, entered_today = "BUY", True
+                            reason = f"Open {offset}% 지정가"
+                        else:
+                            event_reason = ("REENTRY_BLOCKED_BY_CAPITAL" if trades
+                                            else "INITIAL_ENTRY_BLOCKED_BY_CAPITAL")
+                            if not affordability_events or affordability_events[-1]["reason"] != event_reason:
+                                affordability_events.append({"event_date": day,
+                                    "available_cash": float(cash),
+                                    "required_cash": float(required_buy_cash(instrument.lot_size, fill, fees,
+                                                                               config.slippage_rate)),
+                                    "reference_price": float(fill),
+                                    "required_qty": float(instrument.lot_size), "reason": event_reason})
+                            if trades:
+                                blocked_after_exit = True
                 else:
                     filtered += 1
+                    if name in {"S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL"}:
+                        blocked_entries.append({"blocked_entry_date": day,
+                            "hypothetical_entry_price": float(limit), "_index": idx,
+                            "reason": "MA200_TREND_FILTER_FAIL"})
 
         if qty > 0 and name != "S0_BUY_AND_HOLD":
             stop_touched = stop is not None and (opn <= stop if position_from_prior_day else False)
@@ -311,6 +420,7 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
 
         value = cash + qty * close
         if qty: exposure_days += 1
+        else: cash_days += 1
         if entered_today and exited_today:
             action = "BUY+SELL"
             reason = "당일 매수 후 " + reason
@@ -324,36 +434,95 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
                        "target": float(target) if target is not None else None,
                        "stop": float(stop) if stop is not None else None,
                        "pending_next_open": pending})
+        ledger[-1]["strategy_state"] = "BUY" if entered_today else "SELL" if exited_today else "CASH" if not qty else "HOLD"
+
+    for event in blocked_entries:
+        idx = event.pop("_index")
+        for horizon in (20, 60):
+            event[f"forward_{horizon}d_return"] = (float(data.iloc[idx+horizon]["close"] /
+                event["hypothetical_entry_price"] - 1) if idx+horizon <= last else None)
 
     values = [float(config.initial_capital), *[row["portfolio_value"] for row in ledger]]
-    peak, mdd, current_duration, max_duration = values[0], 0.0, 0, 0
-    for value in values[1:]:
+    peak, mdd, max_drawdown_amount, current_duration, max_duration = values[0], 0.0, 0.0, 0, 0
+    drawdown_peak = drawdown_trough = None
+    for value_index, value in enumerate(values[1:], 1):
         if value >= peak:
             peak, current_duration = value, 0
         else:
             current_duration += 1
             max_duration = max(max_duration, current_duration)
-            mdd = min(mdd, value/peak-1)
+            current_drawdown = value/peak-1
+            if current_drawdown < mdd:
+                mdd = current_drawdown
+                drawdown_peak, drawdown_trough = peak, value_index
+            max_drawdown_amount = max(max_drawdown_amount, peak-value)
+    recovery_index = (next((i for i in range(drawdown_trough+1, len(values))
+                            if values[i] >= drawdown_peak), None)
+                      if drawdown_trough is not None else 0)
+    recovery_days = (recovery_index-drawdown_trough if recovery_index is not None and
+                     drawdown_trough is not None else 0 if drawdown_trough is None else None)
     gains = [trade["net_profit"] for trade in trades if trade["net_profit"] > 0]
     losses = [trade["net_profit"] for trade in trades if trade["net_profit"] < 0]
     gross_wins, gross_losses = sum(gains), -sum(losses)
+    loss_streak = streak = 0
+    for trade in trades:
+        streak = streak + 1 if trade["net_profit"] < 0 else 0
+        loss_streak = max(loss_streak, streak)
+    positive_exits = {trade["exit_date"] for trade in trades if trade["net_profit"] > 0}
+    profit_indices = [i for i, row in enumerate(ledger) if row["date"] in positive_exits]
     realized_gain = sum(trade["net_profit"] for trade in trades)
-    unrealized_gain = float(qty * Decimal(str(ledger[-1]["close"])) - entry_notional - entry_fee) if qty else 0.0
+    unrealized_gain = float(qty * Decimal(str(ledger[-1]["close"])) - entry_notional - entry_fee - entry_slip) if qty else 0.0
+    open_cost_basis = float(entry_notional + entry_fee + entry_slip) if qty else 0.0
+    open_unrealized_return = unrealized_gain / open_cost_basis if open_cost_basis else None
+    open_marked_pnls = ([float(qty * Decimal(str(row["close"])) - entry_notional - entry_fee - entry_slip)
+                         for row in ledger[entry_index-first:]] if qty else [])
+    open_worst_pnl = min([0.0, *open_marked_pnls]) if qty else None
+    open_worst_return = open_worst_pnl / open_cost_basis if open_cost_basis else None
     metrics = {
         "initial_capital": float(config.initial_capital), "final_portfolio": values[-1],
+        "cash": float(cash), "market_value": float(qty * Decimal(str(ledger[-1]["close"]))),
         "net_gain": values[-1]-values[0], "net_return": values[-1]/values[0]-1,
+        "gross_gain_cost_addback": values[-1]-values[0]+float(total_cost),
+        "gross_return_cost_addback": (values[-1]-values[0]+float(total_cost))/values[0],
         "realized_gain": realized_gain, "unrealized_gain": unrealized_gain,
-        "mdd": mdd, "max_drawdown_duration": max_duration,
+        "open_unrealized_return": open_unrealized_return,
+        "open_worst_marked_pnl": open_worst_pnl,
+        "open_worst_marked_return": open_worst_return,
+        "mdd": mdd, "max_drawdown_amount": max_drawdown_amount,
+        "max_drawdown_duration": max_duration,
+        "recovered_from_max_drawdown": recovery_index is not None,
+        "recovery_days": recovery_days,
+        "unrecovered_days": (len(values)-1-drawdown_trough if recovery_index is None else 0),
+        "required_gain_to_recover_pct": required_gain_to_recover(mdd),
         "completed_trades": len(trades), "open_trades": int(qty > 0),
         "win_count": len(gains), "loss_count": len(losses),
         "win_rate": len(gains)/len(trades) if trades else None,
         "average_win": mean(gains) if gains else None,
         "average_loss": mean(losses) if losses else None,
+        "max_single_loss": min(losses) if losses else None,
+        "max_consecutive_losses": loss_streak,
+        "payoff_ratio": mean(gains)/abs(mean(losses)) if gains and losses else None,
+        "closed_trade_expectancy_krw": mean(t["net_profit"] for t in trades) if trades else None,
+        "closed_trade_expectancy_pct": mean(t["net_return"] for t in trades) if trades else None,
         "profit_factor": gross_wins/gross_losses if gross_losses else None,
         "average_holding_days": mean(t["holding_days"] for t in trades) if trades else None,
         "median_holding_days": median(t["holding_days"] for t in trades) if trades else None,
         "max_holding_days": max((t["holding_days"] for t in trades), default=0),
+        "max_capital_lock_days_observed": max(
+            max((t["holding_days"] for t in trades), default=0),
+            last-entry_index+1 if qty else 0),
         "market_exposure_ratio": exposure_days/len(ledger),
+        "realized_profit_events_per_year": len(profit_indices)*252/len(ledger),
+        "average_days_between_profit_events": (mean(b-a for a,b in zip(profit_indices,profit_indices[1:]))
+                                               if len(profit_indices)>1 else None),
+        "net_profit_per_100_trading_days": (values[-1]-values[0])*100/len(ledger),
+        "cash_days": cash_days, "cash_ratio": cash_days/len(ledger),
+        "entry_filter_pass_count": entry_filter_pass_count,
+        "entry_filter_fail_count": entry_filter_fail_count,
+        "entry_blocked_days": entry_blocked_days,
+        "blocked_entry_opportunity_count": len(blocked_entries),
+        "total_buy_fee": float(total_buy_fee), "total_sell_fee": float(total_sell_fee),
+        "total_tax": float(total_tax), "total_slippage": float(total_slippage),
         "total_trading_cost": float(total_cost), "stop_loss_count": stop_count,
         "time_stop_count": time_count, "trend_pass_days": trend_pass,
         "trend_fail_days": trend_fail, "filtered_entry_count": filtered,
@@ -363,6 +532,8 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
         "average_sl_distance": mean(sl_distances) if sl_distances else None,
         "signal_count": signal_count, "false_reversal_count": false_reversal,
         "whipsaw_count": whipsaws,
+        "affordability_event_count": len(affordability_events),
+        "reentry_blocked_by_capital": blocked_after_exit,
     }
     if name == "S6B_CONFIRMED_REVERSAL":
         metrics["oversold_signal_count"] = signal_count
@@ -376,5 +547,17 @@ def _run_one(data: pd.DataFrame, instrument: Instrument, first: int, last: int,
         market_return = float(data.iloc[last]["close"] / data.iloc[first]["open"] - 1)
         metrics["breakout_signal_count"] = signal_count
         metrics["trend_capture_ratio"] = metrics["net_return"] / market_return if market_return > 0 else None
+    open_position = ({"entry_date": pd.Timestamp(data.iloc[entry_index]["date"]).date().isoformat(),
+                      "entry_price": float(entry_price), "quantity": float(qty),
+                      "target": float(target) if target is not None else None,
+                      "mark_close": ledger[-1]["close"], "holding_days": last-entry_index+1,
+                      "unrealized_pnl": unrealized_gain,
+                      "unrealized_return": open_unrealized_return,
+                      "worst_marked_pnl": open_worst_pnl,
+                      "worst_marked_return": open_worst_return} if qty else None)
     return {"strategy": name, "metrics": metrics, "ledger": ledger, "trades": trades,
-            "ambiguity_count": ambiguity}
+            "open_position": open_position, "ambiguity_count": ambiguity,
+            "affordability_events": affordability_events,
+            "blocked_entries": blocked_entries,
+            "last_entry_filter_allowed": (MA200TrendFilter().allows(data.iloc[last])
+                if name in {"S1_TREND_FILTERED_TAKE_PROFIT", "S2_TREND_FILTERED_TP_SL"} else None)}

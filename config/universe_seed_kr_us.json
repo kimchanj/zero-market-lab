@@ -1,11 +1,11 @@
 {
   "description": "Six representative research seeds, not an investment recommendation or point-in-time index",
   "assets": [
-    {"symbol":"005930","name":"삼성전자","market":"KRX","currency":"KRW","timezone":"Asia/Seoul"},
-    {"symbol":"000660","name":"SK하이닉스","market":"KRX","currency":"KRW","timezone":"Asia/Seoul"},
-    {"symbol":"035420","name":"NAVER","market":"KRX","currency":"KRW","timezone":"Asia/Seoul"},
-    {"symbol":"NVDA","name":"NVIDIA","market":"US","currency":"USD","timezone":"America/New_York"},
-    {"symbol":"MSFT","name":"Microsoft","market":"US","currency":"USD","timezone":"America/New_York"},
-    {"symbol":"AAPL","name":"Apple","market":"US","currency":"USD","timezone":"America/New_York"}
+    {"symbol":"005930","name":"삼성전자","market":"KRX","currency":"KRW","timezone":"Asia/Seoul","instrument_type":"KRX_STOCK","exchange_segment":"KOSPI","isa_eligible":true,"group":"SEED"},
+    {"symbol":"000660","name":"SK하이닉스","market":"KRX","currency":"KRW","timezone":"Asia/Seoul","instrument_type":"KRX_STOCK","exchange_segment":"KOSPI","isa_eligible":true,"group":"SEED"},
+    {"symbol":"035420","name":"NAVER","market":"KRX","currency":"KRW","timezone":"Asia/Seoul","instrument_type":"KRX_STOCK","exchange_segment":"KOSPI","isa_eligible":true,"group":"SEED"},
+    {"symbol":"NVDA","name":"NVIDIA","market":"US","currency":"USD","timezone":"America/New_York","instrument_type":"US_STOCK","exchange_segment":"NASDAQ","isa_eligible":false,"group":"SEED"},
+    {"symbol":"MSFT","name":"Microsoft","market":"US","currency":"USD","timezone":"America/New_York","instrument_type":"US_STOCK","exchange_segment":"NASDAQ","isa_eligible":false,"group":"SEED"},
+    {"symbol":"AAPL","name":"Apple","market":"US","currency":"USD","timezone":"America/New_York","instrument_type":"US_STOCK","exchange_segment":"NASDAQ","isa_eligible":false,"group":"SEED"}
   ]
 }

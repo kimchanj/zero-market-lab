@@ -1,7 +1,7 @@
 """Local-only research API plus existing chart assets. No outbound news requests."""
 from __future__ import annotations
 import argparse
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -12,6 +12,7 @@ import sys
 from collections import OrderedDict
 from threading import Lock
 from urllib.parse import urlsplit, parse_qs
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -20,7 +21,13 @@ from zero_market_lab.research.news import CatalogNewsProvider
 from zero_market_lab.research.snapshot import build_snapshot, markdown
 from zero_market_lab.simulator.service import run_simulation
 from scripts.run_samsung_family import build_report
-from scripts.run_asset_discovery import build_report as build_discovery_report
+from scripts.run_asset_discovery import (build_report as build_discovery_report,
+                                         build_period_comparison, build_yearly_report,
+                                         build_robustness_report, build_journal_report,
+                                         build_survival_comparison)
+from zero_market_lab.asset_discovery.engine import ResearchRunConfig
+from zero_market_lab.simulator.models import CostConfig
+from zero_market_lab.simulator.strategy_family import FixedTakeProfitConfig, FixedStopConfig
 
 
 def load_context(mode="LOCAL_RESEARCH", public_dir: Path | None = None):
@@ -108,10 +115,20 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
         def do_GET(self):
             # Restrict static serving to the chart and its vendored chart dependency.
             path = urlsplit(self.path).path
-            if path == "/api/asset-discovery" and mode == "LOCAL_RESEARCH":
+            if path in {"/api/asset-discovery", "/api/asset-discovery/periods",
+                        "/api/asset-discovery/yearly", "/api/asset-discovery/robustness",
+                        "/api/asset-discovery/journal", "/api/asset-discovery/survival"} and mode == "LOCAL_RESEARCH":
                 try:
                     params = parse_qs(urlsplit(self.path).query, strict_parsing=True)
-                    if any(len(values) != 1 for values in params.values()) or set(params) - {"as_of", "lookback", "capital", "us_capital"}:
+                    cost_names = {"kr_buy", "kr_sell", "kr_tax", "kr_slip",
+                                  "us_buy", "us_sell", "us_tax", "us_slip"}
+                    allowed = {"as_of", "lookback", "capital", "us_capital", "s1_entry", "s1_tp",
+                               "s2_tp", "s2_sl"} | cost_names
+                    if path.endswith(("/periods", "/journal")):
+                        allowed |= {"symbol", "strategy"}
+                    if path.endswith(("/robustness", "/survival")):
+                        allowed |= {"symbol"}
+                    if any(len(values) != 1 for values in params.values()) or set(params) - allowed:
                         raise ValueError("Invalid discovery parameters")
                     as_of = date.fromisoformat(params["as_of"][0]) if "as_of" in params else None
                     lookback = params.get("lookback", ["1Y"])[0]
@@ -123,19 +140,62 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
                     if (not capital.is_finite() or not Decimal(10000) <= capital <= Decimal(1000000000)
                         or not us_capital.is_finite() or not Decimal(10) <= us_capital <= Decimal(1000000)):
                         raise ValueError("Invalid capital")
-                    if lookback not in {"6M", "1Y", "3Y", "5Y"}:
+                    if lookback not in {"6M", "1Y", "2Y", "3Y", "4Y", "5Y"}:
                         raise ValueError("Invalid lookback")
+                    def percent(name, default, lower, upper):
+                        try:
+                            value = Decimal(params.get(name, [default])[0])
+                        except InvalidOperation as error:
+                            raise ValueError(f"Invalid {name}") from error
+                        if not value.is_finite() or not lower <= value <= upper:
+                            raise ValueError(f"Invalid {name}")
+                        return value
+                    s1 = FixedTakeProfitConfig(
+                        percent("s1_entry", "-1", Decimal("-20"), Decimal(0)),
+                        percent("s1_tp", "5", Decimal("0.1"), Decimal(100)))
+                    s2 = FixedStopConfig(
+                        percent("s2_tp", "5", Decimal("0.1"), Decimal(100)),
+                        percent("s2_sl", "3", Decimal("0.1"), Decimal("99")))
+                    rates = {name: percent(name, default, Decimal(0), Decimal(5)) / 100
+                             for name, default in [("kr_buy", "0.015"), ("kr_sell", "0.015"),
+                                                   ("kr_tax", "0"), ("kr_slip", "0"),
+                                                   ("us_buy", "0.015"), ("us_sell", "0.015"),
+                                                   ("us_tax", "0"), ("us_slip", "0")]}
+                    config = ResearchRunConfig(
+                        as_of or datetime.now(ZoneInfo("Asia/Seoul")).date(), lookback,
+                        capital, us_capital, s1=s1, s2=s2,
+                        krx_costs=CostConfig(buy_fee_rate=rates["kr_buy"],
+                                             sell_fee_rate=rates["kr_sell"],
+                                             sell_tax_rate=rates["kr_tax"],
+                                             label="MARKET_RESEARCH_ASSUMPTION"),
+                        us_costs=CostConfig(buy_fee_rate=rates["us_buy"],
+                                            sell_fee_rate=rates["us_sell"],
+                                            sell_tax_rate=rates["us_tax"],
+                                            label="MARKET_RESEARCH_ASSUMPTION"),
+                        krx_slippage_rate=rates["kr_slip"],
+                        us_slippage_rate=rates["us_slip"])
                     local_versions = tuple(sorted((str(path), path.stat().st_mtime_ns)
                                                   for path in (ROOT / "data/processed").rglob("*")
                                                   if path.is_file() and path.suffix in {".csv", ".json"}
                                                   if "korea_" in str(path) or "samsung_005930" in str(path)
                                                   or "us_" in str(path)))
-                    cache_key = (as_of, lookback, capital, us_capital, local_versions)
+                    symbol = params.get("symbol", [None])[0] if path.endswith(("/periods", "/robustness", "/journal", "/survival")) else None
+                    strategy_id = params.get("strategy", [None])[0] if symbol else None
+                    if path.endswith(("/periods", "/journal")) and (not symbol or not strategy_id):
+                        raise ValueError("Asset and strategy are required")
+                    if path.endswith(("/robustness", "/survival")) and not symbol:
+                        raise ValueError("Asset is required")
+                    cache_key = (path, config, symbol, strategy_id, local_versions)
                     with lock:
                         report = discovery_runs.get(cache_key)
                     if report is None:
-                        report = build_discovery_report(as_of=as_of, lookback=lookback,
-                                                        capital=capital, us_capital=us_capital)
+                        report = (build_period_comparison(config, symbol, strategy_id)
+                                  if path.endswith("/periods") else
+                                  build_journal_report(config, symbol, strategy_id) if path.endswith("/journal") else
+                                  build_survival_comparison(config, symbol) if path.endswith("/survival") else
+                                  build_yearly_report(config) if path.endswith("/yearly") else
+                                  build_robustness_report(config, symbol) if path.endswith("/robustness") else
+                                  build_discovery_report(config=config))
                         with lock:
                             discovery_runs[cache_key] = report
                             while len(discovery_runs) > 8:

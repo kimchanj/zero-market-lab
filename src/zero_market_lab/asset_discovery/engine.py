@@ -17,14 +17,17 @@ from typing import Callable
 import pandas as pd
 
 from zero_market_lab.simulator.models import CostConfig, Instrument
-from zero_market_lab.simulator import strategy_family
-from zero_market_lab.simulator.strategy_family import FamilyConfig, STRATEGIES, run_family
+from zero_market_lab.simulator.execution import ConfigurableFeeModel, affordable_quantity, required_buy_cash
+from zero_market_lab.simulator import strategy_family, entry_filter
+from zero_market_lab.simulator.strategy_family import FamilyConfig, FixedTakeProfitConfig, FixedStopConfig, STRATEGIES, run_family
 from .behavior import analyze_behavior
+from .instrument_policy import ISA_SOURCE, ISA_FOREIGN_SOURCE, current_cost_reference
 
 
-ENGINE_VERSION = "asset-discovery-v1"
+ENGINE_VERSION = "asset-discovery-v2-entry-filter"
 LOOKBACKS = {"6M": {"months": 6}, "1Y": {"years": 1},
-             "3Y": {"years": 3}, "5Y": {"years": 5}}
+             "2Y": {"years": 2}, "3Y": {"years": 3},
+             "4Y": {"years": 4}, "5Y": {"years": 5}}
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,14 @@ class ResearchRunConfig:
     universe_id: str = "kr_us_seed"
     min_evaluation_rows: int = 60
     max_data_lag_days: int = 10
+    s1: FixedTakeProfitConfig = FixedTakeProfitConfig()
+    s2: FixedStopConfig = FixedStopConfig()
+    krx_costs: CostConfig = CostConfig(buy_fee_rate=Decimal("0.00015"),
+                                       sell_fee_rate=Decimal("0.00015"), sell_tax_rate=Decimal(0))
+    us_costs: CostConfig = CostConfig(buy_fee_rate=Decimal("0.00015"),
+                                      sell_fee_rate=Decimal("0.00015"), sell_tax_rate=Decimal(0))
+    krx_slippage_rate: Decimal = Decimal(0)
+    us_slippage_rate: Decimal = Decimal(0)
 
 
 def filter_cells(run: dict, *, strategy_id: str, minimum_trades: int = 0,
@@ -74,14 +85,29 @@ def filter_cells(run: dict, *, strategy_id: str, minimum_trades: int = 0,
 
 
 def run_discovery(universe: list[dict], load_frame: Callable[[str], tuple[pd.DataFrame, dict]],
-                  config: ResearchRunConfig) -> dict:
+                  config: ResearchRunConfig, *, include_ledger_for: str | None = None) -> dict:
     if config.lookback not in LOOKBACKS or config.initial_capital <= 0 or config.us_initial_capital <= 0:
         raise ValueError("Invalid lookback or capital")
     start = (pd.Timestamp(config.evaluation_date) - pd.DateOffset(**LOOKBACKS[config.lookback])).date()
     created = datetime.now(timezone.utc).isoformat()
-    research_costs = CostConfig(buy_fee_rate=Decimal("0.00015"),
-                                sell_fee_rate=Decimal("0.00015"), sell_tax_rate=Decimal(0),
-                                label="MARKET_RESEARCH_ASSUMPTION")
+    fee_models = {
+        "KRX": {**{key: str(value) for key, value in asdict(config.krx_costs).items()},
+                "slippage_rate": str(config.krx_slippage_rate)},
+        "US": {**{key: str(value) for key, value in asdict(config.us_costs).items()},
+               "slippage_rate": str(config.us_slippage_rate)},
+    }
+    if any(not rate.is_finite() or not 0 <= rate <= Decimal("0.05") for rate in (
+        config.krx_costs.buy_fee_rate, config.krx_costs.sell_fee_rate,
+        config.krx_costs.sell_tax_rate, config.us_costs.buy_fee_rate,
+        config.us_costs.sell_fee_rate, config.us_costs.sell_tax_rate,
+        config.krx_slippage_rate, config.us_slippage_rate)):
+        raise ValueError("Invalid research cost rate")
+    s1_config = {key: str(value) for key, value in asdict(config.s1).items()}
+    s2_config = {key: str(value) for key, value in asdict(config.s2).items()}
+    source_hash = sha256((inspect.getsource(strategy_family) +
+                          inspect.getsource(entry_filter)).encode()).hexdigest()
+    strategy_hash = sha256(json.dumps({"source": source_hash, "s1": s1_config, "s2": s2_config},
+                                      sort_keys=True).encode()).hexdigest()
     run = {"run_id": None, "created_at": created, "engine_version": ENGINE_VERSION,
            "evaluation_date": config.evaluation_date.isoformat(), "lookback": config.lookback,
            "requested_period": [start.isoformat(), config.evaluation_date.isoformat()],
@@ -89,17 +115,30 @@ def run_discovery(universe: list[dict], load_frame: Callable[[str], tuple[pd.Dat
            "initial_capital_by_market": {"KRX": float(config.initial_capital), "US": float(config.us_initial_capital)},
            "universe": config.universe_id,
            "strategy_versions": {name: "v1" for name in STRATEGIES},
-           "strategy_config_hash": sha256(inspect.getsource(strategy_family).encode()).hexdigest(),
-           "fee_model": asdict(research_costs), "fee_model_version": "research-v1",
+           "strategy_config_hash": strategy_hash,
+           "strategy_config": {"S1_FIXED_TAKE_PROFIT": s1_config,
+                               "S1_TREND_FILTERED_TAKE_PROFIT": s1_config,
+                               "S2_FIXED_TP_SL": s2_config,
+                               "S2_TREND_FILTERED_TP_SL": s2_config},
+           "fee_model": fee_models["KRX"], "fee_model_by_market": fee_models,
+           "fee_model_version": "research-v2",
            "assets": [], "cells": [], "warnings": [
                "과거 가격데이터 기반 연구결과이며 미래 수익을 보장하지 않습니다.",
                "현재 Universe는 수동 선정이므로 생존자 편향이 있을 수 있습니다."]}
-    run["fee_model"] = {key: str(value) for key, value in run["fee_model"].items()}
     for entry in universe:
         symbol = entry["symbol"]
         asset = {"symbol": symbol, "name": entry["name"], "market": entry["market"],
                  "currency": entry.get("currency", "KRW" if entry["market"] == "KRX" else "USD"),
+                 "instrument_type": entry.get("instrument_type", "KRX_STOCK" if entry["market"] == "KRX" else "US_STOCK"),
+                 "group": entry.get("group", "SEED"),
+                 "isa_eligible": entry.get("isa_eligible", entry["market"] == "KRX"),
+                 "isa_reason": entry.get("isa_reason", "국내 상장주식" if entry["market"] == "KRX"
+                                         else "해외 상장주식은 중개형 ISA 직접매수 불가"),
+                 "isa_source": ISA_SOURCE if entry["market"] == "KRX" else ISA_FOREIGN_SOURCE,
+                 "exchange_segment": entry.get("exchange_segment"),
                  "status": "SKIPPED", "reason": None}
+        reference = current_cost_reference(asset["instrument_type"], asset["exchange_segment"])
+        asset["cost_profile_reference"] = reference.as_dict() if reference else None
         run["assets"].append(asset)
         try:
             frame, provenance = load_frame(symbol)
@@ -119,8 +158,9 @@ def run_discovery(universe: list[dict], load_frame: Callable[[str], tuple[pd.Dat
             is_korea = entry["market"] == "KRX"
             family_config = FamilyConfig(
                 initial_capital=config.initial_capital if is_korea else config.us_initial_capital,
-                costs=research_costs,
-                stock_price_bands=is_korea)
+                costs=config.krx_costs if is_korea else config.us_costs,
+                stock_price_bands=is_korea, s1=config.s1, s2=config.s2,
+                slippage_rate=config.krx_slippage_rate if is_korea else config.us_slippage_rate)
             instrument = Instrument(entry["market"]+":"+symbol, symbol, entry["name"],
                                     "KOREAN_EQUITY" if is_korea else "US_EQUITY",
                                     entry["market"], asset["currency"],
@@ -131,24 +171,59 @@ def run_discovery(universe: list[dict], load_frame: Callable[[str], tuple[pd.Dat
                                     adjusted_status=provenance.get("adjustment", "UNKNOWN"))
             result = run_family(frame, instrument, start, config.evaluation_date,
                                 family_config, isolate_errors=True)
+            current_price = Decimal(str(frame.iloc[-1]["close"]))
+            fee = ConfigurableFeeModel(family_config.costs, instrument.currency_precision)
+            current_qty = affordable_quantity(family_config.initial_capital, current_price,
+                                               instrument.lot_size, fee, family_config.slippage_rate)
+            asset["affordability"] = {
+                "current_price": float(current_price),
+                "price_date": frame.iloc[-1]["date"].isoformat(),
+                "available_cash": float(family_config.initial_capital),
+                "max_affordable_qty": int(current_qty),
+                "required_cash_for_one_share": float(required_buy_cash(
+                    instrument.lot_size, current_price, fee, family_config.slippage_rate)),
+                "affordability_status": "AFFORDABLE" if current_qty else "NOT_AFFORDABLE"}
             data_hash = sha256(frame.to_csv(index=False).encode()).hexdigest()
+            period_support = {}
+            for period, offset in LOOKBACKS.items():
+                period_start = (pd.Timestamp(config.evaluation_date) - pd.DateOffset(**offset)).date()
+                period_support[period] = (int((frame.date < period_start).sum()) >= 100 and
+                                          int((frame.date >= period_start).sum()) >= config.min_evaluation_rows)
             asset.update(status="OK", reason=None, profile=profile,
-                         actual_period=result["actual_period"], data_quality={
+                         actual_period=result["actual_period"],
+                         warmup_observations=result["warmup_observations"], data_quality={
                              "provider": provenance.get("provider", "UNKNOWN"),
                              "adjustment": provenance.get("adjustment", "UNKNOWN"),
                              "source_url": provenance.get("source_url"),
                              "retrieved_at": provenance.get("retrieved_at"),
                              "data_start": frame.date.iloc[0].isoformat(),
                              "data_end": frame.date.iloc[-1].isoformat(), "row_count": len(frame),
+                             "available_years": round((frame.date.iloc[-1] - frame.date.iloc[0]).days / 365.2425, 2),
+                             "period_support": period_support,
                              "missing_days": None, "missing_days_note": "Exchange calendar reconciliation pending",
                              "sha256": data_hash})
             for strategy_id, item in result["results"].items():
+                metrics = item.get("metrics")
+                no_buy_due_to_capital = bool(metrics and not metrics["completed_trades"] and
+                    not metrics["open_trades"] and item.get("affordability_events"))
                 run["cells"].append({"symbol": symbol, "name": entry["name"],
                                      "market": entry["market"], "currency": asset["currency"],
                                      "strategy_id": strategy_id,
-                                     "status": item.get("status", "OK"),
-                                     "reason": item.get("reason"),
-                                     "metrics": item.get("metrics"), "profile": profile})
+                                     "strategy_config": (s1_config if strategy_id in {
+                                         "S1_FIXED_TAKE_PROFIT", "S1_TREND_FILTERED_TAKE_PROFIT"}
+                                         else s2_config if strategy_id in {
+                                         "S2_FIXED_TP_SL", "S2_TREND_FILTERED_TP_SL"} else {}),
+                                     "status": "NOT_AFFORDABLE" if no_buy_due_to_capital else item.get("status", "OK"),
+                                     "reason": "NO_SHARE_AFFORDABLE_AT_ENTRY" if no_buy_due_to_capital else item.get("reason"),
+                                     "metrics": metrics, "profile": profile,
+                                     "trades": item.get("trades", []),
+                                     **({"ledger": item.get("ledger", [])}
+                                        if strategy_id == include_ledger_for else {}),
+                                     "open_position": item.get("open_position"),
+                                     "affordability_events": item.get("affordability_events", []),
+                                     "blocked_entries": item.get("blocked_entries", []),
+                                     "last_entry_filter_allowed": item.get("last_entry_filter_allowed"),
+                                     "affordability": asset["affordability"]})
         except (FileNotFoundError, ValueError, KeyError, TypeError) as error:
             asset["status"] = "DATA_UNAVAILABLE" if isinstance(error, FileNotFoundError) else "SKIPPED"
             asset["expected_import_file"] = (f"data/processed/{'korea_' if entry['market']=='KRX' else 'us_'}{symbol}/<snapshot>/ohlcv.csv"
@@ -163,7 +238,7 @@ def run_discovery(universe: list[dict], load_frame: Callable[[str], tuple[pd.Dat
                                            "us_capital": str(config.us_initial_capital),
                                            "universe": config.universe_id,
                                            "strategy_hash": run["strategy_config_hash"],
-                                           "fee_model": run["fee_model"]},
+                                           "fee_model": run["fee_model_by_market"]},
                               "universe_entries": universe,
                               "data": [(item["symbol"], item.get("data_quality", {}).get("sha256"))
                                        for item in run["assets"]]}, sort_keys=True)

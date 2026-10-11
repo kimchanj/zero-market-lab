@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -51,6 +51,34 @@ def normalize(document: dict, symbol: str) -> tuple[pd.DataFrame, dict]:
                    "validation": report.to_dict()}
 
 
+def completed_daily_bars(frame: pd.DataFrame, exchange_today: date) -> pd.DataFrame:
+    """Exclude a provider's potentially incomplete current exchange-day bar."""
+    completed = frame.loc[frame.date < exchange_today].reset_index(drop=True)
+    if completed.empty:
+        raise ValueError("No completed US daily bars")
+    return completed
+
+
+def audit_split_continuity(frame: pd.DataFrame, document: dict) -> list[dict]:
+    """Reject a raw split-sized quote discontinuity at declared split events."""
+    result = document["chart"]["result"][0]
+    events = (result.get("events") or {}).get("splits") or {}
+    checks = []
+    for event in events.values():
+        event_date = datetime.fromtimestamp(int(event["date"]), timezone.utc).astimezone(
+            ZoneInfo("America/New_York")).date()
+        matching = frame.index[frame.date == event_date]
+        if len(matching) != 1 or int(matching[0]) == 0:
+            raise ValueError("Split event has no comparable quote session")
+        index = int(matching[0])
+        close_ratio = float(frame.iloc[index]["close"] / frame.iloc[index - 1]["close"])
+        if not 0.5 <= close_ratio <= 1.5:
+            raise ValueError("Split-sized quote discontinuity")
+        checks.append({"date": event_date.isoformat(), "ratio": event["splitRatio"],
+                       "close_ratio": round(close_ratio, 6)})
+    return checks
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--symbols", nargs="+", default=["NVDA", "MSFT", "AAPL"])
@@ -70,6 +98,14 @@ def main() -> None:
             response.raise_for_status()
             document = response.json()
             frame, metadata = normalize(document, symbol)
+            # A provider can expose today's still-changing bar during the US session.
+            # Keep only dates strictly before the current New York calendar day.
+            exchange_today = datetime.now(ZoneInfo("America/New_York")).date()
+            frame = completed_daily_bars(frame, exchange_today)
+            metadata["validation"] = validate_ohlcv(
+                frame, expected_first_date=frame.iloc[0]["date"]).to_dict()
+            metadata["excluded_current_exchange_date"] = exchange_today.isoformat()
+            metadata["split_continuity_checks"] = audit_split_continuity(frame, document)
             raw = ROOT / "data/raw" / f"us_{symbol}" / stamp
             processed = ROOT / "data/processed" / f"us_{symbol}" / stamp
             raw.mkdir(parents=True, exist_ok=True)
@@ -79,7 +115,9 @@ def main() -> None:
             manifest = {"symbol": symbol, "provider": "Yahoo Finance chart API (secondary provider)",
                         "source_url": response.url, "retrieved_at": datetime.now(timezone.utc).isoformat(),
                         "market": "US", "currency": "USD", "timezone": "America/New_York",
-                        "adjustment": "PROVIDER_QUOTE_OHLC_SPLIT_TREATMENT_UNVERIFIED",
+                        "adjustment": "PROVIDER_QUOTE_SPLIT_EVENT_CONTINUITY_CHECKED" if metadata["split_continuity_checks"]
+                                      else "PROVIDER_QUOTE_NO_SPLIT_EVENT_IN_RANGE",
+                        "adjustment_policy": "Provider quote OHLC used for execution; declared split events checked for quote continuity. Adjusted close is supplemental only; dividends excluded.",
                         "adjusted_close": "SUPPLEMENTAL_ONLY",
                         "dividends": "EXCLUDED_FROM_STRATEGY", "response_sha256": sha256(response.content).hexdigest(),
                         "row_count": len(frame), "actual_range": [frame.iloc[0].date.isoformat(),

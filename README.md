@@ -1,5 +1,25 @@
 # ZERO MARKET LAB
 
+The local Asset Discovery workstation now starts with investment conditions,
+capital results and completed/open trade records. Its collapsed research areas
+retain candidate filters, 6M–5Y comparisons, annual regime evidence and
+fixed TP 3%/5% S1 rolling robustness. See
+[the S1 rolling method and results](docs/s1-rolling-robustness.md) and
+[the paper-trading boundary](docs/paper-trading-foundation.md). No live or paper
+orders are placed by this historical research screen.
+
+The [forward-validation milestone audit](docs/milestone-forward-validation-foundation.md)
+summarizes the frozen Phase research, negative findings, and local Paper Trading MVP.
+The MVP has only been exercised as historical replay; no LIVE_FORWARD pilot has begun.
+
+The current local research branch also compares entry-filtered S1-TF/S2-TF
+against the unchanged S0/S1/S2/S7 controls. The MA200 rule can deliberately
+wait in cash, and the UI reports that choice alongside total assets, open
+losses, drawdown and rolling trade-offs. The [fixed rules and observations](docs/entry-filter-cash-research.md)
+include a [June open-loss case](docs/s1-open-position-risk-case.md) where the
+filter did **not** prevent the entry. These changes await screen review and
+are not yet a committed GitHub checkpoint.
+
 실제 과거 시장데이터로 투자 가설을 검증하는 연구용 시뮬레이터다. 현재 V2는 로컬에서
 TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요약, 일별 Ledger,
 차트 Hover 매매복기와 뉴스 맥락을 살펴볼 수 있다. 투자 조언이나 실거래 서비스가 아니다.
@@ -11,17 +31,25 @@ TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요
 `/asset_discovery/` compares the existing S0–S7 strategy family across a six-asset
 research seed: Samsung Electronics, SK hynix, NAVER, NVIDIA, Microsoft, and Apple.
 It shows historical price-behavior profiles, strategy × asset metrics, data availability,
-and sortable historical-fit candidates separated by market. Korea uses native KRW 500,000;
+and sortable historical-fit candidates separated by market. The local research UI supports
+6M/1Y/2Y/3Y/4Y/5Y windows, configurable S1 entry/take-profit and explicit market-specific
+fees, tax and slippage assumptions. It also compares independent periods and retrospective
+annual S0/S1/S7 results with asset-specific price regimes. Korea uses native KRW 500,000;
 the US uses native USD 500. Missing local OHLCV is reported as unavailable; no synthetic
 prices fill the real-data table. The current local machine has actual-price caches for all
 six seed assets; other machines must fetch their own local data. Walk-Forward and
-append-only Paper Trading are designed but not implemented. See
-[architecture](docs/asset-discovery-architecture.md) and [Walk-Forward design](docs/walk-forward-design.md).
+Walk-Forward remains a design; an append-only Paper Trading CLI/SQLite MVP exists
+separately and has only been exercised as historical replay. See
+[architecture](docs/asset-discovery-architecture.md), [yearly/regime methodology](docs/yearly-regime-research.md),
+[Walk-Forward design](docs/walk-forward-design.md), and [Paper Trading MVP](docs/paper-trading-mvp.md).
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/run_asset_discovery.py --as-of 2026-10-08 --lookback 1Y
 .\.venv\Scripts\python.exe scripts/run_research_ui.py --port 8066
 ```
+
+로컬 캐시가 없는 환경에서는 한국 3종목을 `--limit 1500`, 미국 3종목을 `--range 10y`로
+수집해야 5년 평가와 100거래일 준비기간을 확보할 수 있다. 원본 시세는 Git에 포함하지 않는다.
 
 ## 데이터 정책
 
@@ -165,7 +193,7 @@ Python / Pandas / Plotly / Dash(초기 UI 후보 1순위) / pytest / CSV·Parque
 설치된 Python 3.13.11과 프로젝트 `.venv`를 사용한다(3.12 미설치).
 직접 의존성은 pandas, plotly, pytest, pyarrow, requests, kaleido이며 전이 의존성까지 requirements.txt에 버전을 고정했다.
 Kaleido는 Plotly 검증 차트의 PNG 내보내기에만 사용한다.
-현재 작업환경은 Windows PowerShell, 로컬 경로 `D:\workspace\github\zero-market-lab`이다.
+로컬 실행 예시는 Windows PowerShell 기준이며 저장소 루트에서 실행한다.
 GitHub public 저장소: https://github.com/kimchanj/zero-market-lab, branch `main`.
 
 ## 실행 (PowerShell, 프로젝트 루트)

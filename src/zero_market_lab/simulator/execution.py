@@ -12,6 +12,24 @@ def quantize_money(value: Decimal, precision: int) -> Decimal:
     return value.quantize(quantum, rounding=ROUND_HALF_UP)
 
 
+def affordable_quantity(cash: Decimal, price: Decimal, lot_size: Decimal,
+                        fees: "ConfigurableFeeModel", slippage_rate: Decimal) -> Decimal:
+    """Largest whole-lot order whose price, rounded fee and slippage fit cash."""
+    if cash <= 0 or price <= 0 or lot_size <= 0:
+        return Decimal(0)
+    quantity = (cash / price / lot_size).to_integral_value(rounding=ROUND_FLOOR) * lot_size
+    while quantity > 0 and required_buy_cash(quantity, price, fees, slippage_rate) > cash:
+        quantity -= lot_size
+    return quantity
+
+
+def required_buy_cash(quantity: Decimal, price: Decimal,
+                      fees: "ConfigurableFeeModel", slippage_rate: Decimal) -> Decimal:
+    notional = quantity * price
+    return (notional + fees.buy_fee(notional) +
+            quantize_money(notional * slippage_rate, fees.currency_precision))
+
+
 def floor_to_tick(value: Decimal, tick: Decimal) -> Decimal:
     return (value / tick).to_integral_value(rounding=ROUND_FLOOR) * tick
 
