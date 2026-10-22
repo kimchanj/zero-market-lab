@@ -210,6 +210,12 @@
       yearlyReport=null;$('yearly').replaceChildren();$('regime-summary').replaceChildren();
       $('year-status').textContent='투자 조건이 바뀌었습니다. 연도별 분석을 다시 실행하세요.';
       render();markStale();comparePeriods();loadJournal();if($('survival-panel').open)loadSurvival();
+      const comparisonWorkspace=document.getElementById('comparison-workspace');
+      if(comparisonWorkspace && Array.isArray(data.requested_period)){
+        comparisonWorkspace.dataset.investmentStart=data.requested_period[0];
+        comparisonWorkspace.dataset.investmentEnd=data.requested_period[1];
+      }
+      window.dispatchEvent(new CustomEvent('zml:investment-period', {detail:data.requested_period}));
       const ok=data.assets.filter(a=>a.status==='OK').length;
       $('status').textContent=`${data.requested_period.join(' ~ ')} · ${ok}/${data.assets.length}종목 데이터 사용 · ${data.cells.filter(c=>c.status==='OK').length}개 전략 셀 · ${short(executedStrategy)}${['S1_FIXED_TAKE_PROFIT','S1_TREND_FILTERED_TAKE_PROFIT'].includes(executedStrategy)?` TP ${data.strategy_config.S1_FIXED_TAKE_PROFIT.take_profit_pct}%`:''} · ${data.run_id}`;
     }catch(error){$('status').textContent=`분석 실패: ${error.message}`;}finally{$('run').disabled=false;}

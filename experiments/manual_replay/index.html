@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZERO MARKET LAB · 수동 모의투자</title>
+  <link rel="stylesheet" href="/manual/style.css"><script defer src="/manual/app.js"></script>
+</head>
+<body><main>
+  <header><div><small>ZERO MARKET LAB · HISTORICAL MANUAL REPLAY</small><h1>종목을 골라 직접 매매하는 모의투자</h1></div><a href="/">전략 Replay로 돌아가기</a></header>
+  <p class="notice">과거 일봉을 하루씩 열어 보는 연구용 계좌입니다. 오늘 확인한 종가 뒤에 주문하고 해당 종목의 <strong>다음 거래일 시가</strong>에 체결합니다. 실제 주문·LIVE_FORWARD 성과가 아닙니다. 원화와 달러 잔고는 환전·합산하지 않습니다.</p>
+  <section class="panel"><h2>계좌</h2><form id="create-form" class="form-grid">
+    <label>시작일<input id="start-date" type="date" required></label>
+    <label>초기 원화 예수금 (KRW)<input id="initial-krw" type="number" min="0" max="1000000000" step="1" value="10000000" required></label>
+    <label>초기 달러 예수금 (USD)<input id="initial-usd" type="number" min="0" max="1000000" step="0.01" value="0" required></label>
+    <button type="submit" class="primary">새 모의계좌 생성</button>
+  </form><div class="account-row"><label>기존 계좌 이어보기<select id="account-select"><option value="">저장 계좌 없음</option></select></label><button id="next-day" type="button" class="primary" disabled>다음 거래일 열기 →</button></div></section>
+  <p id="error" class="error" role="alert" hidden></p>
+  <div id="workspace" hidden>
+    <div class="date-line"><strong id="replay-date">—</strong><span id="next-date">—</span></div>
+    <details class="panel accordion" id="manual-journal" open><summary>Daily Investment Journal <small id="journal-head">0 sessions · 거래일 진행 전</small></summary>
+      <div class="table-wrap journal-table"><table><thead><tr><th>거래일</th><th>체결</th><th>보유종목</th><th>KRW 현금</th><th>KRW 총자산</th><th>USD 현금</th><th>USD 총자산</th></tr></thead><tbody id="journal-body"></tbody></table></div>
+    </details>
+    <details class="panel accordion" id="manual-summary" open><summary>Account Summary <small id="summary-head">KRW · USD 별도 잔고</small></summary><div id="wallets" class="wallets"></div></details>
+    <details class="panel accordion" id="manual-today" open><summary>Today Market / Decision <small id="today-head">다음 거래일 확인 대기</small></summary>
+      <div id="market-board" class="market-board">거래일을 열면 선택 종목의 관측 시세가 표시됩니다.</div>
+      <h2>매매 주문 <small>현재 날짜 종가 확인 후 주문 · 다음 해당 종목 거래일 시가 체결</small></h2><form id="order-form" class="form-grid">
+      <label>종목<select id="symbol" required></select></label><label>구분<select id="side"><option value="BUY">매수</option><option value="SELL">매도</option></select></label>
+      <label id="budget-field">1회 매수금액 한도<input id="budget" type="number" min="0.01" step="0.01"></label>
+      <label id="quantity-field" hidden>매도 수량 (정수 주)<input id="quantity" type="number" min="1" step="1"></label>
+      <button id="submit-order" type="submit" class="primary">매수 주문</button>
+      </form><p id="order-hint" class="hint">종목을 선택하세요.</p></details>
+    <details class="panel accordion" id="manual-position" open><summary>Position Detail <small id="position-head">0종목 보유</small></summary><div class="table-wrap"><table><thead><tr><th>종목명</th><th>매입단가</th><th>보유수량</th><th>현재가</th><th>매입금액</th><th>평가금액</th><th>평가손익</th><th>수익률</th></tr></thead><tbody id="holdings"></tbody></table></div></details>
+    <details class="panel accordion" id="manual-orders"><summary>Order / Execution Detail <small id="orders-head">대기 0건</small></summary><h2>미체결 주문</h2><div id="pending" class="event-list">없음</div><h2>최근 체결·거부 기록</h2><div id="events" class="event-list">없음</div></details>
+    <details class="panel accordion" id="manual-transit"><summary>☉ Transit Context <small id="transit-head">Research Context Only</small></summary><div id="transit-detail" class="hint">현재 거래일을 열면 Solar Gate 맥락을 조회합니다. 매매 판단에는 사용하지 않습니다.</div></details>
+    <details class="panel accordion" id="manual-technical"><summary>Technical / Data Provenance <small id="technical-head">HISTORICAL MANUAL REPLAY</small></summary><p id="technical-detail" class="hint"></p></details>
+  </div>
+</main></body></html>

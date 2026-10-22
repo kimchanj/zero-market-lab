@@ -1,0 +1,51 @@
+{
+  "version": "hd-quarters-v0.1",
+  "source": "https://jovianarchive.com/products/quarter-by-quarter-the-16-faces-of-the-godhead",
+  "source_note": "Quarter boundaries and themes are research metadata, not financial evidence. Korean labels are short translations.",
+  "quarters": [
+    {
+      "id": "initiation",
+      "name": "Quarter of Initiation",
+      "name_ko": "시작의 쿼터",
+      "theme": "Purpose fulfilled through Mind",
+      "theme_ko": "정신을 통해 목적을 실현",
+      "start_gate": 13,
+      "turning_gate": 25,
+      "end_gate": 24,
+      "color": "#417394"
+    },
+    {
+      "id": "civilization",
+      "name": "Quarter of Civilization",
+      "name_ko": "문명의 쿼터",
+      "theme": "Purpose fulfilled through Form",
+      "theme_ko": "형태를 통해 목적을 실현",
+      "start_gate": 2,
+      "turning_gate": 15,
+      "end_gate": 33,
+      "color": "#517b64"
+    },
+    {
+      "id": "duality",
+      "name": "Quarter of Duality",
+      "name_ko": "이중성의 쿼터",
+      "theme": "Purpose fulfilled through Bonding",
+      "theme_ko": "결속을 통해 목적을 실현",
+      "start_gate": 7,
+      "turning_gate": 46,
+      "end_gate": 44,
+      "color": "#735e87"
+    },
+    {
+      "id": "mutation",
+      "name": "Quarter of Mutation",
+      "name_ko": "변이의 쿼터",
+      "theme": "Purpose fulfilled through Transformation",
+      "theme_ko": "변화를 통해 목적을 실현",
+      "start_gate": 1,
+      "turning_gate": 10,
+      "end_gate": 19,
+      "color": "#8b684c"
+    }
+  ]
+}

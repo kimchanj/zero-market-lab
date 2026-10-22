@@ -1,11 +1,35 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>종목 발굴 · ZERO MARKET LAB</title><link rel="stylesheet" href="style.css"></head>
+<title>종목 발굴 · ZERO MARKET LAB</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201%201'%3E%3C/svg%3E"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="comparison.css"></head>
 <body><main>
-<header><nav><a href="#investment-conditions">전략 시뮬레이션</a><a href="#robustness-panel">S1 안정성 검증</a><a href="#paper-panel">모의투자 준비</a><a href="../tiger_etf_v2/">TIGER 연구</a><a href="../samsung_strategy_family/">삼성전자 전략 비교</a></nav>
-<p>ZERO MARKET LAB · LOCAL RESEARCH</p><h1>투자 전략 시뮬레이션</h1>
-<p>초기자금이 어떻게 변했는지, 몇 번 수익을 실현했는지, 여러 시작시점에서도 버텼는지를 확인합니다. 과거 연구 결과이며 투자 추천이나 실제 주문이 아닙니다.</p></header>
-<details class="panel" id="investment-conditions" open><summary>1. 투자 조건</summary><div class="controls primary-controls">
+<header><nav><a href="#comparison-workspace">Research Comparison</a><a href="#investment-conditions">전략 시뮬레이션</a><a href="#robustness-panel">S1 안정성 검증</a><a href="#paper-panel">모의투자 준비</a><a href="../tiger_etf_v2/">TIGER 연구</a><a href="../samsung_strategy_family/">삼성전자 전략 비교</a></nav>
+<h1>ZERO MARKET LAB · 시장 연구</h1></header>
+<section id="comparison-workspace" class="comparison-workspace" aria-label="Research Comparison Workspace">
+  <div class="comparison-top"><h2>시장 비교 연구</h2><span title="관측 데이터의 탐색 화면이며 매매 신호가 아닙니다.">관측 전용 ⓘ</span></div>
+  <div class="comparison-controls">
+    <label>기준 자산<select id="cmp-base"></select></label>
+    <label>시작일<input id="cmp-start" type="date"></label>
+    <label>종료일<input id="cmp-end" type="date"></label>
+    <label>연도<select id="cmp-year"><option value="">직접 기간</option></select></label>
+    <label>표시<select id="cmp-display"><option value="ACTUAL">실제값 · 단위별 축</option><option value="NORMALIZE_100">상대 변화 · 첫 관측 100</option></select></label>
+    <button id="cmp-run" type="button">비교 실행</button>
+  </div>
+  <div class="comparison-shortcuts" aria-label="투자기간 바로가기">
+    <button type="button" data-cmp-range="1M">1M</button><button type="button" data-cmp-range="3M">3M</button>
+    <button type="button" data-cmp-range="6M">6M</button><button type="button" data-cmp-range="1Y">1Y</button>
+    <button type="button" data-cmp-range="3Y">3Y</button><button type="button" data-cmp-range="ALL">ALL</button>
+    <button type="button" data-cmp-range="SIM" title="마지막 투자조건 실행 기간">SIM</button>
+    <span id="cmp-range-note" class="sr-only">가격 관측 범위만 변경합니다.</span>
+  </div>
+  <div class="comparison-layer-row"><div id="cmp-layers" class="comparison-layers" aria-label="선택된 비교 Layer"></div><div class="comparison-add-wrap"><button id="cmp-add" type="button" aria-expanded="false" aria-controls="cmp-picker">+ 비교 추가</button>
+    <div id="cmp-picker" class="comparison-picker" hidden><strong>비교 대상 추가</strong><label class="comparison-search-label">검색<input id="cmp-search" type="search" placeholder="종목 또는 지표 검색" autocomplete="off"></label><div id="cmp-catalog"></div></div></div></div>
+  <p id="cmp-status" role="status" class="comparison-status">비교 데이터를 준비하고 있습니다.</p>
+  <div class="comparison-plot"><div id="cmp-chart" class="comparison-chart" aria-label="동일 날짜축 비교 차트"></div><div id="cmp-quarter-markers" class="comparison-quarter-markers" aria-hidden="true"></div>
+    <div id="cmp-context" class="comparison-context" aria-live="polite" hidden><div class="comparison-summary-title"><strong id="cmp-date">—</strong><span id="cmp-hover-mode">Hover</span><button id="cmp-unlock" type="button" title="날짜 고정 해제 (Esc)" hidden>✕</button></div><div id="cmp-context-body"></div></div>
+    <div id="cmp-indicator-pane" class="comparison-indicator-pane" aria-label="수치 지표 상태" hidden></div><div id="cmp-quarter-band" class="comparison-quarter-band" aria-label="Human Design Four Quarters"></div><div id="cmp-transit-band" class="comparison-transit-band" aria-label="선택한 Transit Gate 구간"></div><p id="cmp-chart-note" class="note"></p></div>
+  <div class="comparison-details"><details id="cmp-indicator-detail"><summary>지표 상세 · 값과 해석</summary><div id="cmp-indicator-detail-body">차트 날짜를 선택하면 값과 관측일을 확인할 수 있습니다.</div></details><details id="cmp-transit-detail"><summary>☉ 트랜짓 상세 · <span id="cmp-gate-head">—</span></summary><div id="cmp-gate-detail">관문을 선택하면 해석과 금융시장 관측을 분리해 표시합니다.</div></details><details><summary>데이터 상태 · 출처</summary><div id="cmp-provenance">시장 시세는 로컬 연구용 자료입니다.</div><div id="cmp-data-status"></div></details></div>
+</section>
+<details class="panel" id="investment-conditions"><summary>1. 투자 조건</summary><div class="controls primary-controls">
 <label>시장<select id="market"><option value="ALL">한국 + 미국</option><option value="KRX">한국 · KRX</option><option value="US">미국 · US</option></select></label>
 <label class="isa-control"><span>ISA 후보</span><span><input id="isa-only" type="checkbox" checked> ISA 가능 종목만</span></label>
 <label>종목<select id="asset"><option value="005930">삼성전자 · 005930</option><option value="000660">SK하이닉스 · 000660</option><option value="035420">NAVER · 035420</option><option value="NVDA">NVIDIA · NVDA</option><option value="MSFT">Microsoft · MSFT</option><option value="AAPL">Apple · AAPL</option></select></label>
@@ -37,7 +61,7 @@
 <p id="status" role="status">분석을 실행해 주세요.</p>
 <p id="data-quality-line" class="note">데이터 상태는 실행 후 표시됩니다.</p>
 <p id="stale-banner" class="stale-banner" role="status" hidden>조건이 변경되었습니다. [실행]을 눌러야 결과에 반영됩니다. 아래 수치는 마지막 실행 조건의 결과입니다.</p>
-<details class="panel" id="investment-results" open><summary>2. 투자 결과</summary>
+<details class="panel" id="investment-results"><summary>2. 투자 결과</summary>
 <p id="executed-config" class="note">아직 실행한 조건이 없습니다.</p>
 <p id="money-explanation" class="note">종목 분석을 실행하면 선택한 종목과 전략의 금액 성과가 표시됩니다.</p>
 <p id="benchmark-note" class="note"></p>
@@ -48,7 +72,7 @@
 <p id="accounting-note" class="note"></p>
 <p class="note" id="s1-risk-warning">S1 계열에는 손절 규칙이 없습니다. 청산거래의 기대값은 기간 종료 시 미청산 손익을 포함하지 않습니다.</p>
 <details id="result-detail"><summary>위험·손익 상세</summary><div class="summary-grid"><div><span>순수익률</span><strong id="summary-return">—</strong></div><div><span>완료거래</span><strong id="summary-trades">—</strong></div><div><span>최대낙폭</span><strong id="summary-mdd">—</strong></div><div title="평가기간 중 이전 최고 자산가치 대비 최대 감소액"><span>최대 고점 대비 감소액</span><strong id="summary-drawdown-money">—</strong></div><div><span>평균 보유기간</span><strong id="summary-holding">—</strong></div><div><span>최대 자본 고착기간</span><strong id="summary-lock">—</strong></div></div></details></details>
-<details class="panel" id="asset-comparison" open><summary>3. 종목 비교</summary><p class="note">현재가는 마지막 확인된 종가입니다. 매수 가능 수량은 새 시드머니로 현재가에 매수한다는 가정이며, 과거 매매 가능 여부와 다릅니다. Seed 6종목은 알려진 대형주 중심이라 전략 일반화 근거가 아닙니다.</p><div class="table-wrap"><table><thead><tr><th>종목</th><th>ISA</th><th>현재가</th><th>매수가능</th><th>최종자산</th><th>순수익</th><th>순수익률</th><th>S0 최종자산</th><th>S0 대비</th><th>익절횟수</th><th>MDD</th><th>최대 고착일</th><th>상태</th></tr></thead><tbody id="asset-comparison-body"></tbody></table></div></details>
+<details class="panel" id="asset-comparison"><summary>3. 종목 비교</summary><p class="note">현재가는 마지막 확인된 종가입니다. 매수 가능 수량은 새 시드머니로 현재가에 매수한다는 가정이며, 과거 매매 가능 여부와 다릅니다. Seed 6종목은 알려진 대형주 중심이라 전략 일반화 근거가 아닙니다.</p><div class="table-wrap"><table><thead><tr><th>종목</th><th>ISA</th><th>현재가</th><th>매수가능</th><th>최종자산</th><th>순수익</th><th>순수익률</th><th>S0 최종자산</th><th>S0 대비</th><th>익절횟수</th><th>MDD</th><th>최대 고착일</th><th>상태</th></tr></thead><tbody id="asset-comparison-body"></tbody></table></div></details>
 <details class="panel" id="candidate-panel"><summary>전략 적합 후보 · 고급 필터</summary>
 <p class="note">선택한 기간과 전략 조건에서 필터를 통과한 과거 데이터 기반 후보입니다. 추천 종목이나 매수 신호가 아닙니다.</p>
 <div class="controls filters"><label title="이 전략으로 완료된 매매의 최소 횟수">최소 완료거래<input id="mintrades" type="number" min="0" value="0" placeholder="0"><small>0 = 제한 없음. 거래가 적으면 우연한 결과일 수 있습니다.</small></label>
@@ -62,10 +86,10 @@
 <p class="note">S1의 승률은 청산 완료 거래 중 수익 비율일 뿐입니다. 손절 규칙이 없어 손실은 미청산 평가손실로 남을 수 있습니다. PF — 는 손실 거래가 없거나 완료 거래가 없어 정의되지 않은 경우입니다. 행을 클릭하면 해당 종목의 상세 결과를 봅니다.</p></details>
 <details class="panel" id="data-panel"><summary>데이터 품질 · Universe 상태</summary><div class="table-wrap"><table><thead><tr><th>시장</th><th>종목</th><th>상태</th><th>사용 데이터 기간</th><th>실제 평가기간</th><th>준비 거래일</th><th>지원기간</th><th>관측 행수</th><th>공급자</th><th>가격 보정</th><th>사유 / 필요 파일</th></tr></thead><tbody id="availability"></tbody></table></div></details>
 <details class="panel" id="matrix-panel"><summary>가격행동 · 전략 매트릭스 · 기술적 연구 지표</summary><h2 id="matrix-title">자산별 전략 매트릭스</h2><p id="why" class="note"></p><div class="table-wrap"><table><thead><tr><th>전략</th><th>전략조건</th><th>최종자산</th><th>순수익률</th><th title="실제 매매 경로에서 지출한 비용을 최종자산에 다시 더해 계산한 참고 수익률. 비용 0 재실행과는 다를 수 있음">비용 전 참고수익률 ⓘ</th><th>MDD</th><th>PF</th><th>거래수</th><th>승률</th><th>평균보유</th><th>비용</th></tr></thead><tbody id="matrix"></tbody></table></div></details>
-<details class="panel" id="period-panel" open><summary>4. 기간별 성과</summary><p class="note">선택한 종목·전략을 6개 독립 기간에서 비교합니다. 각 기간은 같은 초기자금으로 새로 시작하므로 연속 투자 수익률로 합산하지 않습니다.</p>
+<details class="panel" id="period-panel"><summary>4. 기간별 성과</summary><p class="note">선택한 종목·전략을 6개 독립 기간에서 비교합니다. 각 기간은 같은 초기자금으로 새로 시작하므로 연속 투자 수익률로 합산하지 않습니다.</p>
 <p id="period-status" class="note"></p>
 <div class="table-wrap"><table><thead><tr><th>기간</th><th>초기자금</th><th>최종자금</th><th>순수익금</th><th>순수익률</th><th>S0 최종자산</th><th>S0 대비</th><th>익절횟수</th><th>총비용</th><th>MDD</th><th>최대 고착일</th><th>상태</th></tr></thead><tbody id="period-matrix"></tbody></table></div></details>
-<details class="panel" id="trade-records" open><summary>5. 매매 기록</summary><p class="note">일별 종가 평가와 실제 체결을 구분합니다. 날짜 순서로 확인하세요.</p><p id="journal-status" class="note"></p>
+<details class="panel" id="trade-records"><summary>5. 매매 기록</summary><p class="note">일별 종가 평가와 실제 체결을 구분합니다. 날짜 순서로 확인하세요.</p><p id="journal-status" class="note"></p>
 <div class="table-wrap"><table><thead><tr><th>날짜</th><th>행동</th><th>체결가</th><th>보유수량</th><th>현금</th><th>총자산</th><th>실현손익</th><th>설명</th></tr></thead><tbody id="daily-ledger"></tbody></table></div>
 <details><summary>완료 거래·미청산 포지션 상세</summary><div class="table-wrap"><table><thead><tr><th>매수일</th><th>매도일 / 상태</th><th>매수가</th><th>매도가 / 평가종가</th><th>수량</th><th>손익</th><th>보유 거래일</th><th>거래비용</th></tr></thead><tbody id="trade-body"></tbody></table></div></details></details>
 <details class="panel" id="survival-panel"><summary>전략 비교 · 생존/기대값</summary>
@@ -88,4 +112,4 @@
 <div class="table-wrap"><table><thead><tr><th>Regime</th><th>전략</th><th>표본 연도</th><th>평균 순수익률</th><th>중앙값</th><th>양수 비율</th><th>평균 MDD</th><th>평균 거래수</th><th>S0 대비 평균 (%p)</th></tr></thead><tbody id="regime-summary"></tbody></table></div></details>
 <details class="panel" id="paper-panel"><summary>모의투자 · 설계 준비</summary><p>실제 미래 관측 데이터만 하루씩 추가하는 매매일지를 다음 단계에 설계합니다. 현재 화면은 과거 데이터 백테스트이며 모의 주문을 실행하지 않습니다. 전략 버전과 비용 모델을 고정해 과거 의사결정이 나중에 바뀌지 않도록 할 예정입니다.</p></details>
 <footer>과거 가격데이터 기반 연구결과이며 미래 수익을 보장하지 않습니다. Walk-Forward와 미래 Paper Trading 검증은 아직 구현되지 않았습니다.</footer>
-</main><script src="app.js"></script></body></html>
+</main><script src="../lightweight_charts/vendor/lightweight-charts.standalone.production.js"></script><script src="comparison.js?v=step8_2"></script><script src="app.js?v=step8_2"></script></body></html>

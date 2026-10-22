@@ -28,6 +28,8 @@ from scripts.run_asset_discovery import (build_report as build_discovery_report,
 from zero_market_lab.asset_discovery.engine import ResearchRunConfig
 from zero_market_lab.simulator.models import CostConfig
 from zero_market_lab.simulator.strategy_family import FixedTakeProfitConfig, FixedStopConfig
+from zero_market_lab.research.comparison import ComparisonResearch
+from zero_market_lab.transit.calendar import year_calendar
 
 
 def load_context(mode="LOCAL_RESEARCH", public_dir: Path | None = None):
@@ -54,10 +56,12 @@ def research_response(context, params):
             "validation": markdown(packet, "validation"), "concept": markdown(packet, "concept")}
 
 
-def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
+def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None,
+                comparison_controller: ComparisonResearch | None = None):
     runs = OrderedDict()
     discovery_runs = OrderedDict()
     lock = Lock()
+    comparison = (comparison_controller or ComparisonResearch(ROOT)) if mode == "LOCAL_RESEARCH" else None
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(ROOT / "experiments"), **kwargs)
@@ -115,6 +119,52 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
         def do_GET(self):
             # Restrict static serving to the chart and its vendored chart dependency.
             path = urlsplit(self.path).path
+            if path == "/favicon.ico":
+                # Chrome requests this even when the page declares an inline icon.
+                self.send_response(204)
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                return
+            if comparison is not None and path in {"/api/comparison/catalog", "/api/comparison/series",
+                                                   "/api/comparison/context", "/api/comparison/calendar"}:
+                try:
+                    params = parse_qs(urlsplit(self.path).query, strict_parsing=True)
+                    if any(len(values) != 1 for values in params.values()):
+                        raise ValueError("Duplicate comparison parameter")
+                    if path == "/api/comparison/calendar":
+                        if set(params) != {"year"}:
+                            raise ValueError("year is required")
+                        payload = year_calendar(int(params["year"][0]))
+                    elif path == "/api/comparison/catalog":
+                        if params:
+                            raise ValueError("Catalog takes no parameters")
+                        payload = comparison.catalog()
+                    else:
+                        required = {"base", "start", "end"}
+                        allowed = required | {"layers", "display"}
+                        if not required <= set(params) or set(params) - allowed:
+                            raise ValueError("Invalid comparison parameters")
+                        layers = [item for item in params.get("layers", [""])[0].split(",") if item]
+                        payload = comparison.series(base=params["base"][0], start=params["start"][0],
+                                                    end=params["end"][0], layers=layers,
+                                                    display=params.get("display", ["ACTUAL"])[0])
+                        if path.endswith("/context"):
+                            # Date is supplied as end: the snapshot cannot include later observations.
+                            payload = {"date": params["end"][0],
+                                       "context": payload["context_by_date"].get(params["end"][0]),
+                                       "provenance": payload["provenance"]}
+                    raw, status = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8"), 200
+                except (ValueError, FileNotFoundError) as error:
+                    raw, status = json.dumps({"error": str(error)}, ensure_ascii=False).encode("utf-8"), 400
+                except Exception:
+                    raw, status = json.dumps({"error": "비교 연구 데이터를 불러오지 못했습니다."}, ensure_ascii=False).encode("utf-8"), 502
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(raw)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(raw)
+                return
             if path in {"/api/asset-discovery", "/api/asset-discovery/periods",
                         "/api/asset-discovery/yearly", "/api/asset-discovery/robustness",
                         "/api/asset-discovery/journal", "/api/asset-discovery/survival"} and mode == "LOCAL_RESEARCH":
@@ -253,7 +303,8 @@ def handler_for(context, mode="LOCAL_RESEARCH", public_dir: Path | None = None):
                 allowed.update({"/samsung_strategy_family/", "/samsung_strategy_family/index.html",
                                 "/samsung_strategy_family/style.css", "/samsung_strategy_family/app.js"})
                 allowed.update({"/asset_discovery/", "/asset_discovery/index.html",
-                                "/asset_discovery/style.css", "/asset_discovery/app.js"})
+                                "/asset_discovery/style.css", "/asset_discovery/app.js",
+                                "/asset_discovery/comparison.css", "/asset_discovery/comparison.js"})
             if path not in allowed:
                 self.send_error(404)
                 return

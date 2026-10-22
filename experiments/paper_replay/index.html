@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZERO MARKET LAB · Paper Replay</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/vendor/lightweight-charts.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div><div class="eyebrow">ZERO MARKET LAB · PAPER TRADING LAB</div><h1>거래일을 하루씩 열어 보는 모의투자</h1></div>
+      <div class="mode-badge"><strong>HISTORICAL REPLAY</strong><small>과거 데이터 재생 · LIVE_FORWARD 성과 아님</small><a href="/manual/">종목을 골라 직접 매매하기 →</a></div>
+    </header>
+
+    <section class="panel setup" aria-labelledby="setup-title">
+      <div class="setup-title"><h2 id="setup-title">종목별 Historical Replay <span>전략 · 매수 조건 · 자금 한도</span></h2><span id="data-range">로컬 시세 확인 중…</span></div>
+      <form id="create-form" class="create-grid">
+        <label>종목<select id="asset-select" required><option value="000660">SK하이닉스 · 000660</option></select></label>
+        <label>전략<select id="strategy-select" required><option value="S1">S1 Fixed Take Profit</option></select></label>
+        <label><span id="capital-label">초기 투자금 (KRW)</span><input id="capital" type="number" min="10000" max="1000000000" step="1" value="10000000" required></label>
+        <label><span id="budget-label">1회 매수 한도 (KRW)</span><input id="buy-budget" type="number" min="1" max="10000000" step="1" value="2000000" required></label>
+        <label>시작일<input id="start-date" type="date" required></label>
+        <button type="submit" class="primary">새 시뮬레이션 생성</button>
+        <div id="s1-fields" class="strategy-fields"><label>매수 지정가 · 시가 대비 (%)<input id="entry-offset" type="number" min="-20" max="0" step="0.1" value="-1" required></label><label>익절 목표 · 매수가 대비 (%)<input id="take-profit" type="number" min="0.1" max="100" step="0.1" value="5" required></label></div>
+        <div id="strategy-note" class="strategy-note" hidden></div>
+        <div class="resume-actions"><label class="resume-label">기존 Replay 이어보기<select id="account-select"><option value="">저장된 계좌 없음</option></select></label><button id="hide-account" type="button" class="secondary danger" disabled>선택 계좌 숨기기</button></div>
+      </form>
+      <p class="budget-help">1회 매수 한도는 주문당 최대 지출액입니다. 매수 지정가는 다음 거래일 시가와 비율로 정하며, 체결 전에는 현금이 차감되지 않습니다. 정수 주식과 거래비용 때문에 실제 사용액은 한도보다 작을 수 있습니다.</p>
+      <details id="hidden-restore" class="restore-panel" hidden><summary>숨긴 Replay 복원 <span id="hidden-count"></span></summary><div class="restore-actions"><select id="hidden-account-select" aria-label="복원할 Replay 계좌"></select><button id="restore-account" type="button" class="secondary">선택 계좌 복원</button></div></details>
+    </section>
+
+    <div id="error" class="error" role="alert" hidden></div>
+    <div id="empty-state" class="empty-state">시작일을 선택하고 시뮬레이션을 생성하세요. 계좌 생성만으로 거래일은 진행되지 않습니다.</div>
+
+    <div id="workspace" hidden>
+      <div class="workspace-head"><div><span id="workspace-asset" class="eyebrow">HISTORICAL REPLAY · S1</span><span id="run-meta">시작 전</span></div><div class="view-date"><strong id="current-date">NOT PROCESSED</strong><span id="view-mode">현재 상태</span></div></div>
+      <div class="controls-bar panel"><div><strong>거래일 진행</strong><small id="next-hint">다음 거래일을 확인하세요.</small></div><div class="button-row"><button id="previous" type="button" class="secondary">← Previous View</button><button id="latest" type="button" class="secondary">Latest View</button><button id="next" type="button" class="primary">Run Next Day →</button></div></div>
+      <div class="buy-status panel" role="status"><strong id="buy-status-title">매수 상태</strong><span id="buy-status-detail">거래일을 진행하면 주문과 현금 사용액이 표시됩니다.</span></div>
+
+      <div class="accordion-stack">
+        <details id="section-summary" class="accordion priority" open>
+          <summary><span class="accordion-title">계좌 요약</span><span class="header-metrics"><strong id="head-equity">₩10,000,000</strong><span id="head-return">0.00%</span><small id="head-cash">현금 ₩10,000,000</small></span><span class="chevron" aria-hidden="true"></span></summary>
+          <div class="accordion-body balance-body" aria-label="계좌 요약">
+            <div class="summary-grid"><div class="metric main-metric"><span>총자산</span><strong id="equity">—</strong><small>예수금 + 보유종목 평가액</small></div><div class="metric"><span>예수금</span><strong id="cash">—</strong></div><div class="metric"><span>보유종목 매입금액</span><strong id="initial">—</strong></div><div class="metric"><span>보유종목 평가금액</span><strong id="market-value">—</strong></div><div class="metric"><span>총손익</span><strong id="total-pnl">—</strong><small id="net-return">—</small></div><div class="metric"><span>실현손익</span><strong id="realized">—</strong></div><div class="metric"><span>평가손익</span><strong id="unrealized">—</strong><small id="valuation-return">—</small></div><div class="metric"><span>S0 기준선</span><strong id="s0">—</strong><small id="vs-s0">차이 —</small></div></div>
+            <div class="balance-table-wrap"><table class="balance-table"><thead><tr><th>종목</th><th>매입단가</th><th>보유수량</th><th>매입금액</th><th>평가금액</th><th>평가손익</th><th>수익률</th></tr></thead><tbody id="balance-holdings"></tbody></table></div>
+            <div class="balance-foot">초기 투자금 <strong id="balance-capital">—</strong> · 현재 미체결 주문은 예수금에서 차감하지 않습니다.</div>
+          </div>
+        </details>
+
+        <details id="section-today" class="accordion priority" open>
+          <summary><span class="accordion-title">오늘 시장 · 판단</span><span class="header-metrics"><strong id="head-decision">NOT PROCESSED</strong><span id="head-market">종가 —</span><small id="head-phase">Phase —</small></span><span class="chevron" aria-hidden="true"></span></summary>
+          <div class="accordion-body today-grid"><div><div class="body-title">시장 <span id="market-date">—</span></div><div class="compact-facts"><span>Open</span><strong id="open">—</strong><span>High</span><strong id="high">—</strong><span>Low</span><strong id="low">—</strong><span>Close</span><strong id="close">—</strong><span>Volume</span><strong id="volume">—</strong></div></div><div><div class="body-title">Decision <small id="today-decision-note">당일 종가 이후 결정</small></div><div class="compact-facts"><span>Phase</span><strong id="phase">—</strong><span>Signal</span><strong id="signal">—</strong><span>Decision</span><strong id="decision">NOT PROCESSED</strong><span>Reason</span><strong id="reason">—</strong></div></div></div>
+        </details>
+
+        <details id="section-journal" class="accordion journal-panel priority" open>
+          <summary><span class="accordion-title">일별 투자 Journal</span><span class="header-metrics"><strong id="head-journal">0거래일</strong><span id="head-journal-date">최근 —</span><small id="head-journal-equity">총자산 —</small></span><span class="chevron" aria-hidden="true"></span></summary>
+          <div class="accordion-body"><div class="journal-meta"><span id="journal-count">0개 거래일</span><span>행 선택: 해당 날짜 조회 · 계좌 기록은 유지</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Phase</th><th>Signal / Decision</th><th>Order</th><th>Execution</th><th>Qty</th><th>Cash</th><th>Equity</th><th>S0</th><th>Realized</th><th>Unrealized</th></tr></thead><tbody id="journal-body"></tbody></table></div></div>
+        </details>
+
+        <details id="section-position" class="accordion priority" open>
+          <summary><span class="accordion-title">보유 포지션</span><span class="header-metrics"><strong id="head-position">NO POSITION</strong><span id="head-position-avg"></span><small id="head-position-pnl"></small></span><span class="chevron" aria-hidden="true"></span></summary>
+          <div class="accordion-body position-grid"><div class="body-title">현재 상태 <strong id="position-status" class="position-state">NO POSITION</strong></div><div class="compact-facts"><span>Qty</span><strong id="qty">0</strong><span>Average Entry</span><strong id="avg-entry">—</strong><span>Entry Date</span><strong id="entry-date">—</strong><span>Hold Days</span><strong id="hold-days">—</strong><span>Current Close</span><strong id="position-close">—</strong><span>Market Value</span><strong id="position-value">—</strong><span>Unrealized P/L</span><strong id="position-pnl">—</strong><span id="exit-rule-label">Take Profit</span><strong id="take-profit-price">—</strong><span>Stop Loss</span><strong id="stop-loss-price">—</strong></div></div>
+        </details>
+
+        <div class="secondary-grid">
+          <details id="section-price" class="accordion chart-panel">
+            <summary><span class="accordion-title">가격 · 매매 차트</span><span class="header-metrics"><strong id="head-price">0 bars</strong><span id="head-price-close">종가 —</span></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="legend"><i class="dot buy"></i>BUY <i class="dot sell"></i>SELL · Decision △ / Execution ● <label>보기 <select id="price-mode"><option value="replay">Replay · 처리일까지만</option><option value="research">연간 연구 · 읽기 전용</option></select></label><label id="price-year-wrap" hidden>연도 <select id="price-year"></select></label></div><div class="price-scroll"><div class="price-timeline"><div id="price-chart" class="chart"></div><div id="transit-band" class="transit-band" aria-label="가격 차트와 같은 날짜축의 Solar Gate 구간"></div><div id="transit-guide" class="transit-guide" hidden></div></div></div><p id="price-chart-note" class="chart-note">처리한 날짜까지만 표시합니다. 결정은 당일 종가 이후, 체결은 이후 거래일입니다.</p></div>
+          </details>
+          <details id="section-equity" class="accordion chart-panel">
+            <summary><span id="equity-chart-title" class="accordion-title">전략 vs S0 자산 차트</span><span class="header-metrics"><strong id="head-vs-s0">차이 —</strong><span id="head-s0-equity">S0 —</span></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="legend"><i class="line strategy"></i><span id="strategy-legend">Paper Strategy</span> <i class="line s0"></i>S0 전체자금 기준선</div><div id="equity-chart" class="chart"></div><p id="equity-chart-note" class="chart-note">S0 기준선은 첫 시가에 전체 가용 자금으로 매수합니다.</p></div>
+          </details>
+          <details id="section-phase" class="accordion">
+            <summary><span class="accordion-title">Phase 상세</span><span class="header-metrics"><strong id="head-phase-detail">NOT PROCESSED</strong><span id="head-phase-previous"></span></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="context">PRICE_PHASE_V1 · Context Only</div><p class="chart-note">Phase는 시장 맥락이며 S1 매매 결정을 변경하지 않습니다.</p><div class="compact-facts"><span>Current</span><strong id="phase-current">—</strong><span>Previous</span><strong id="phase-previous">—</strong><span>Since</span><strong id="phase-since">—</strong></div></div>
+          </details>
+          <details id="section-orders" class="accordion">
+            <summary><span class="accordion-title">주문 · 체결 상세</span><span class="header-metrics"><strong id="head-order">NONE</strong><span id="head-order-detail"></span></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="compact-facts"><span>Pending Order</span><strong id="pending">NONE</strong><span>Today Order</span><strong id="today-order">NONE</strong><span>Execution</span><strong id="execution">NONE</strong></div><p class="chart-note">오늘의 BUY Decision은 오늘 저가에 체결되지 않습니다.</p></div>
+          </details>
+          <details id="section-transit" class="accordion transit-section">
+            <summary><span class="accordion-title">☉ Transit Context</span><span class="header-metrics"><strong id="head-transit">미조회</strong><span id="head-transit-center">—</span><small id="head-transit-keynote">Research Context</small></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="context">RESEARCH CONTEXT ONLY · 매매 신호·인과관계 아님</div>
+              <div class="compact-facts"><span>Gate.Line</span><strong id="transit-gate">—</strong><span>Gate Name</span><strong id="transit-name">—</strong><span>Center</span><strong id="transit-center">—</strong><span>Keynote</span><strong id="transit-keynote">—</strong><span>시작 (KST)</span><strong id="transit-start">—</strong><span>종료 (KST)</span><strong id="transit-end">—</strong><span>Theme</span><strong id="transit-theme">—</strong><span>Phase Context</span><strong id="transit-phase">—</strong><span>Source</span><strong id="transit-source">—</strong></div>
+              <div class="transit-year"><label>Calendar year <select id="transit-year"></select></label><span id="transit-year-note"></span></div><div id="transit-year-band" class="transit-year-band" aria-label="연간 Solar Gate 순서"></div>
+              <div id="transit-metrics" class="transit-metrics">관측된 거래일 지표를 조회합니다.</div>
+              <p class="chart-note">USNO 태양 황경 근사식으로 계산한 시각입니다. 정밀 천문력 검증 전이므로 경계 시각은 추정값입니다. KRX 일봉은 서울 15:30, 미국 일봉은 뉴욕 16:00 기준으로 매핑합니다.</p>
+            </div>
+          </details>
+          <details id="section-technical" class="accordion technical-section">
+            <summary><span class="accordion-title">기술 · 데이터 출처</span><span class="header-metrics"><strong id="head-provider">—</strong><span id="head-adjustment">—</span><small id="head-data-date">—</small></span><span class="chevron" aria-hidden="true"></span></summary>
+            <div class="accordion-body"><div class="compact-facts"><span>Strategy version</span><strong id="tech-strategy">—</strong><span>Phase version</span><strong id="tech-phase">—</strong><span>Fee model</span><strong id="tech-fee">—</strong><span>Fill rule</span><strong id="tech-fill">—</strong><span>History hash</span><strong id="tech-hash">—</strong><span>Retrieved at</span><strong id="tech-retrieved">—</strong></div><p id="provenance" class="chart-note">로컬 시장 데이터 · 투자 조언 또는 실거래 서비스가 아닙니다.</p></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

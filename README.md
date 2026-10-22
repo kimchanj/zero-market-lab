@@ -1,9 +1,26 @@
 # ZERO MARKET LAB
 
-The local Asset Discovery workstation now starts with investment conditions,
-capital results and completed/open trade records. Its collapsed research areas
-retain candidate filters, 6M–5Y comparisons, annual regime evidence and
-fixed TP 3%/5% S1 rolling robustness. See
+## Paper Trading Visual Simulator · Historical Replay (local)
+
+SK하이닉스 `000660`, 초기자본 ₩10,000,000, S1 전략을 실제 로컬 과거 일봉으로
+하루씩 재생한다. 차트에서 매수·매도 결정과 이후 거래일의 체결을 구분하고,
+계좌 가치·S0 비교·일별 Journal을 기존 Paper Trading Engine 기록으로 확인한다.
+`LIVE_FORWARD` Pilot과 별개인 **HISTORICAL_REPLAY** 화면이며 투자 조언이나
+실거래 서비스가 아니다. 로컬 `000660` 시세 캐시가 필요하다.
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_paper_replay_ui.py --port 8076
+```
+
+브라우저에서 <http://127.0.0.1:8076/>를 열고 Start Date → Create Simulation →
+Run Next Day를 누른다. Previous View는 과거 Journal 조회만 하며 계좌를 되돌리지
+않는다. [사용법과 데이터 경계](docs/paper-trading-visual-simulator.md)를 참조한다.
+
+The local Asset Discovery workstation now puts the full-width comparison chart
+and market context first. Investment conditions, capital results and
+completed/open trade records remain available in its research areas, alongside
+candidate filters, 6M–5Y comparisons, annual regime evidence and fixed TP 3%/5%
+S1 rolling robustness. See
 [the S1 rolling method and results](docs/s1-rolling-robustness.md) and
 [the paper-trading boundary](docs/paper-trading-foundation.md). No live or paper
 orders are placed by this historical research screen.
@@ -17,8 +34,7 @@ against the unchanged S0/S1/S2/S7 controls. The MA200 rule can deliberately
 wait in cash, and the UI reports that choice alongside total assets, open
 losses, drawdown and rolling trade-offs. The [fixed rules and observations](docs/entry-filter-cash-research.md)
 include a [June open-loss case](docs/s1-open-position-risk-case.md) where the
-filter did **not** prevent the entry. These changes await screen review and
-are not yet a committed GitHub checkpoint.
+filter did **not** prevent the entry.
 
 실제 과거 시장데이터로 투자 가설을 검증하는 연구용 시뮬레이터다. 현재 V2는 로컬에서
 TIGER 미국S&P500 실제 OHLCV를 이용해 지정가 매수·익절, 결과요약, 일별 Ledger,

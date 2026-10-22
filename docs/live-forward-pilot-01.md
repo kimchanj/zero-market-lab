@@ -8,7 +8,7 @@
 | --- | --- |
 | Git baseline | `d1ce2f2cd48693727644a443688c06b95c05fc48` (`main`, 로컬 Checkpoint) |
 | Pilot ID | `live-forward-s1-000660-v1` **예정 이름; 계좌 미생성** |
-| Status | `LIVE_FORWARD_BLOCKED_BY_DATA_REFRESH` |
+| Status | `LIVE_FORWARD_WAITING_FOR_NEW_BAR` — STEP 6B 재조회 후에도 신규 확정 바 없음 |
 | Asset | 사용자가 선택한 `000660` SK하이닉스 · KRX · KRW |
 | Strategy | S1 Fixed Take Profit · 신규 진입 당일 TP 불인정 · Phase는 Context 전용 |
 | Capital | 사용자 지정 **10,000,000 KRW**. 계좌는 아직 생성하지 않아 설정 해시는 없음 |
@@ -50,6 +50,16 @@
 - 원천은 계속 `UNADJUSTED` Daum 보조 공급자다. 기업행동에 따른 과거 바 수정이 나타나면 자동 조정 또는 Journal 재계산 없이 중단하며 별도 정정 검토로 넘긴다. 거래소 달력으로 신규 세션 누락을 자동 판별하지 못하는 한계도 유지한다.
 - 지정 Pilot 자산은 `000660` SK하이닉스, 시작 예정 자본은 **10,000,000 KRW**다. S1/Phase/비용/체결 버전은 후보 그대로이며 LIVE_FORWARD 계좌 설정 해시는 아직 없다. STEP 6B는 새 확정 관측일 및 연속성 검증 후 별도로 시작한다.
 - STEP 6A 전체 검증: Python `278 passed`, JavaScript `9 passed`; `pip check`, `node --check`, `git diff --check` 통과. 새로 추가한 6개 수집 안전성 테스트에는 동일 재조회, rolling append, 겹침 누락·수정 거부, 실패 종료코드가 포함된다.
+
+### 2026-10-11 KST — STEP 6B 첫 계좌 시작 조건 재확인
+
+- 시작 기준은 안전성 Checkpoint `b88503c2d55bc2c5bf5dac6ec2dfc610da69263c`, clean `main`, `origin/main` 대비 ahead 2 / behind 0이다. 전략·Phase·비용·체결 코드는 변경하지 않았다.
+- 동일 Daum Finance 보조 공급자에서 `000660`을 `adjusted=false`로 다시 수집했다. 이전 최신일과 새 최신일은 모두 **2026-10-08**, 이전/새 누적 행은 각각 1,500, 추가 행 **0**, 이력 검증 `PASS`다. 새 스냅샷은 Git 제외 `data/processed/korea_000660/20261011T142501Z/`에 있다. 저장된 누적 CSV SHA-256 `37d90ae41de73235b7d23df5bdb8a05d77159fb7ba4a6ae06b8ccf236aad796e`는 메타데이터와 일치한다.
+- 2026-10-11은 일요일이며 2026-10-08 뒤의 **새 확정 거래일 일봉이 없다**. STEP 6B의 사전 조건이 성립하지 않아 `LIVE_FORWARD_WAITING_FOR_NEW_BAR`로 대기한다. 10월 8일 역사 바를 Forward로 재사용하지 않는다.
+- 예정 Pilot ID `live-forward-s1-000660-v1`, 자산 `000660` SK하이닉스, 모의자본 **10,000,000 KRW**. `S1_FIXED_TAKE_PROFIT` / `strategy-family-s1-v1`, `PRICE_PHASE_V1` Context only / hash `c89aba473399951fca616de0a34d8b0d0745d55cbb585e101f8f3822457be81f`, `paper-research-cost-v1`, `daily-ohlcv-s1-v1`의 구현·문서 일치를 확인했다. Entry `Open −1%`, TP `+5%`, 매수/매도 수수료 각 0.015%, 세율·슬리피지 0은 **계좌 생성 전 후보 설정**으로 남는다.
+- 런타임 `artifacts/paper_trading/paper.sqlite3`는 아직 없다. Account, config hash, start/as-of date, 첫 Phase/Signal/Decision/Order/Journal, S0 snapshot 및 손익은 모두 **미생성·미산출**이다. 첫날 상태와 미래 체결을 꾸며 기록하지 않는다.
+- STEP 6B 검증: 전체 Python `278 passed`, 기존 JavaScript `9 passed`, `pip check`와 JavaScript 구문 검사 통과. 문서만 갱신했으며 자동 commit/push는 하지 않는다.
+- **STEP 6B 절차와 현재 엔진의 시점 계약 충돌:** 지시문은 새 확정 바를 확인한 뒤 계좌를 만들고 그 바를 첫 `as_of`로 처리하도록 한다. 현 `run_day()`는 관측일이 **계좌 생성 현지 날짜보다 늦어야** 하고 공급자 재조회도 관측일 다음 현지 날짜 이후여야 한다. 따라서 바를 본 뒤 만든 계좌로 이미 끝난 그 바를 첫 LIVE_FORWARD 날짜로 처리할 수 없다. 새 바가 없는 이번 실행에서는 계좌를 만들지 않았으며, 다음 시도 전에 사용자 검토로 계좌 생성 순서를 확정해야 한다. 엔진·전략 규칙은 바꾸지 않았다.
 
 ## Next market-day manual procedure
 

@@ -132,3 +132,48 @@
 - 로컬 기준선 `d1ce2f2cd48693727644a443688c06b95c05fc48`에서 STEP 6 관련 4개 파일만 감사했다. [Pilot 로그](live-forward-pilot-01.md)에 `000660` SK하이닉스·모의자본 10,000,000 KRW·`LIVE_FORWARD_BLOCKED_BY_DATA_REFRESH`·계좌 미생성 상태를 유지한다.
 - Daum의 rolling 1,500행과 로컬 누적 이력을 비교해 기존 행을 보존한다. 과거 날짜/값이 바뀌거나 빠지면 `DATA_HISTORY_CHANGED`와 비영 종료코드로 중단한다. 새 CSV는 검증된 별도 폴더에서 마지막에 공개하므로 기존 이력을 덮어쓰지 않는다. 원천 응답·누적 이력 해시와 이전/추가 행 수를 메타데이터에 기록한다.
 - 2026-10-11 실제 재조회에서 추가 행 0, 마지막 확정 일봉 **2026-10-08**을 확인했다. 다음은 새로운 확정 거래일 수집 및 이력 연속성 검증이다. 아직 계좌·Phase Snapshot·Decision·Journal은 없으며 STEP 6B를 시작하지 않는다. `UNADJUSTED` 기업행동 정정과 거래소 달력 대조는 남은 위험이다.
+
+## 2026-10-11 STEP 6B — 새 확정 일봉 대기
+
+- Git 기준선 `b88503c2d55bc2c5bf5dac6ec2dfc610da69263c`에서 clean 작업트리와 `origin/main` 대비 ahead 2 / behind 0을 확인했다. `000660` SK하이닉스·시작 예정 자본 **10,000,000 KRW**·S1/`PRICE_PHASE_V1` Context 설정은 그대로다.
+- 실제 공급자 재조회에서 이력 연속성 `PASS`, 신규 행 **0**, 마지막 확정일 **2026-10-08**이었다. 2026-10-11 일요일 현재 새 확정 바가 없어 Pilot 상태는 **`LIVE_FORWARD_WAITING_FOR_NEW_BAR`**다. 예정 Pilot ID `live-forward-s1-000660-v1`은 아직 계좌가 아니며 첫 Decision도 없다.
+- 다음 단계는 새로운 확정 거래일 데이터 수집 → 기존 이력 연속성·거래일 확인 → 그때 계좌 생성과 첫 Forward Decision 기록 여부 검토다. 이번 STEP에서는 전략·Phase·비용·체결 코드 변경, 계좌 생성, commit/push를 하지 않는다.
+- 단, STEP 6B 지시의 “새 확정 바 확인 후 계좌 생성 → 해당 바 처리”는 현 엔진의 “계좌 생성 현지 날짜 **후** 관측된 바만 LIVE_FORWARD”와 충돌한다. 다음 실제 Pilot 전에 사용자와 계좌 생성 시점 또는 절차를 확정해야 하며, 과거 바를 Forward로 우회 처리하지 않는다.
+
+## 2026-10-11 STEP 7 — Historical Replay Visual Simulator 화면 검토 대기
+
+- [로컬 Visual Simulator](paper-trading-visual-simulator.md)는 `000660`·₩10,000,000·S1·`HISTORICAL_REPLAY` 전용이다. 브라우저는 날짜 진행과 기존 Paper Engine 결과 조회만 담당하며, 전략·Phase·체결·회계 규칙은 변경하지 않았다.
+- 별도 Git 제외 DB `artifacts/paper_trading/replay_ui.sqlite3`를 사용한다. 기존 LIVE_FORWARD Pilot 계좌와 기록은 보존하며 UI에서 Pilot을 생성하거나 실행할 수 없다.
+- 화면은 처리된 거래일까지만 OHLCV/결정·체결 마커/계좌 및 S0 Journal을 표시한다. Previous View는 읽기 전용이고 최신 상태에서만 다음 거래일을 진행한다.
+- 실제 SK하이닉스 관측 데이터 2026-08-24~2026-09-29의 25거래일을 별도 로컬 DB로 재생했다. 이 결과는 과거 자료 재생이며 LIVE_FORWARD 성과가 아니다.
+- 최종 회귀: Python 전체 **285 passed**, JavaScript 기존 9 passed, `pip check`·`node --check`·`git diff --check` 통과. 브라우저 생성/다음 거래일/과거 조회/새로고침과 서버 재시작 후 복원을 확인했다.
+- 사용자 화면 검토 전 **commit/push 금지**. STEP 6B의 기존 미커밋 문서 변경도 그대로 보존한다.
+
+## 2026-10-12 STEP 7 UI Rework — Compact Accordion Workspace
+
+- 기존 STEP 7 엔진·API·Journal 기록은 유지하고 `experiments/paper_replay/`의 화면 배치를 수정했다. 9개 독립 아코디언 중 계좌·오늘 시장/판단·Journal·포지션은 기본 펼침, 가격·S1/S0·Phase·주문/체결·기술정보는 기본 접힘이다.
+- Journal을 차트보다 위로 옮기고 두 차트 높이를 축소했다. 접힌 헤더는 기존 API/Journal 숫자를 요약하며 JavaScript에서 전략·손익·체결을 다시 계산하지 않는다. 다음 거래일 후 오늘/Journal을 열고 신규 행을 잠시 강조한다. 열림 상태는 브라우저 `localStorage`에 저장한다.
+- 로컬 HTTP 응답에서 9개 섹션과 Journal 선배치, 저장 계좌 조회를 확인했다. 이번 세션의 브라우저 자동화 표면은 비어 있었으나 사용자가 `http://127.0.0.1:8077/` 화면에서 Journal 선배치, 두 차트의 기본 접힘, 각각의 펼침/접힘이 정상이라고 확인했다. 기존 미커밋 변경과 런타임 SQLite는 보존한다. **commit/push하지 않는다.**
+- Python 전체 **285 passed**, Replay Controller 변경 후 집중 검사 **7 passed**, `pip check`·V8 JavaScript 구문 검사·`git diff --check` 통과. 이 환경에서는 `node` 실행 파일이 PATH에 없어 기존 Node JS 회귀 9개를 이번 턴에 다시 실행하지 못했다. 별도 로컬 포트 `8077`에서 새 API의 가격 변화율과 저장 계좌 상태를 확인했다.
+
+## 2026-10-12 STEP 7 화면 후속 — 계좌 숨김·복원 및 종목 선택
+
+- 사용자가 확인한 compact 계좌 요약을 넓은 화면에서 한 줄 8개 카드로 더 줄이고, 좁은 화면은 4개/2개로 감싼다.
+- `선택 계좌 숨기기`는 확인 후 별도 UI 가시성 테이블에만 기록한다. `숨긴 Replay 복원`으로 다시 목록과 저장 상태에 접근할 수 있다. append-only 계좌·이벤트·Journal 원본은 삭제/수정하지 않으며 LIVE_FORWARD 계좌는 두 동작 모두 거부한다.
+- 종목 선택은 로컬 시세가 있는 6개 Seed Universe 후보를 표시한다. 한국 종목은 KRW, 미국 종목은 USD 계좌를 생성하며 시작일 범위·기본 투자금·금액 표시를 종목에 맞춘다. 기존 SK하이닉스 계좌/Journal은 유지하고 S1·Phase·체결·회계 엔진은 변경하지 않았다.
+- 관련 합성 데이터/HTTP 검증과 전체 Python 회귀 **287 passed**. 로컬 `8077` 서버를 새 코드로 재시작했다. 최종 화면 검토 전 commit/push하지 않는다.
+
+## 2026-10-12 STEP 7 전략·자금 입력 확대
+
+- 사용자 요청에 따라 리플레이 신규 계좌의 전략 선택을 S0/S1/S2/S7로 확장하고, S1의 시가 대비 매수 지정가 %·매수가 대비 익절 % 및 모든 전략의 1회 매수 한도를 입력받는다. 남은 계좌 현금은 그대로 보유한다.
+- 신규 계좌는 전략·한도에 맞춘 버전과 config hash로 고정하고, 기존 S1 및 LIVE_FORWARD 계좌 설정/Journal은 수정하지 않는다. S2 브래킷은 매수 다음 거래일부터 유효하며 손절·익절 동시 도달 시 손절을 우선한다. S7은 완료된 종가의 과거 20일/10일 기준 신호를 다음 시가에 체결한다. 차이는 [Visual Simulator 계약](paper-trading-visual-simulator.md)에 명시했다.
+- 합성 시세 집중 검사 **18 passed**, 전체 Python 회귀 **291 passed**, `pip check`·V8 JavaScript 구문·DOM ID 대조·`git diff --check` 통과. 별도 Git 제외 SQLite에서 실제 SK하이닉스 시세로 S0/S1/S2/S7을 3거래일씩 재생해 전략 ID·통화·1회 매수 한도·잔여 현금을 확인했다. `8077` 서버는 새 코드로 재시작했다. 브라우저 시각 검토가 남아 있어 commit/push하지 않는다.
+
+## 2026-10-12 주식앱형 잔고·수동 모의투자 — 화면 검토 대기
+
+- 기존 단일 전략 계좌 요약을 총자산·예수금·매입금액·평가금액·손익 및 보유종목 표로 바꿨다. Paper Engine의 `entry_cost`와 미실현손익을 그대로 사용한다. 미체결 주문은 예수금에서 차감하지 않으며, 1회 매수 한도는 실제 지출의 상한이라는 안내를 표시한다.
+- `/manual/`에 별도 Historical Manual Replay 계좌를 추가했다. 국내 3종목·미국 3종목 중 고른 자산에 직접 BUY/SELL 주문을 낼 수 있다. KRW/USD는 독립 초기 예수금과 잔고를 유지하고 환전·합산하지 않는다. 주문은 확인한 날짜의 종가 이후에 기록하고 해당 종목의 다음 관측 거래일 시가에만 체결한다. 정수 주식·거래비용을 반영한다.
+- 수동 계좌의 SQLite는 기존 전략·LIVE_FORWARD DB와 분리되며 계좌·주문·체결/거부·일별 장부에 UPDATE/DELETE 금지 트리거가 있다. 원본 시세 해시를 계좌 설정에 고정하고 재시작 시 확인한다. 수수료·데이터 한계는 [Visual Simulator 문서](paper-trading-visual-simulator.md)에 기록했다.
+- 합성 2통화 주문/잔고/불변성 테스트 **1 passed**, 기존 Replay 집중 검사 **13 passed**. 실제 로컬 시세를 사용한 별도 임시 계좌에서 2026-08-25 주문 → 2026-08-26 체결을 확인했다: SK하이닉스 1주 후 KRW 현금 8,331,750원, NVDA 2주 후 USD 현금 $574.66. 이는 Historical Replay 예시이며 미래 성과가 아니다.
+- 전체 Python 회귀 **292 passed**. 이후 append-only 신규 일봉 허용을 위한 시세 해시 정규화와 SQLite 연결 정리를 보완했고, 수동/기존 Replay 집중 검사 **14 passed**, 일봉 추가·과거 수정 거부 검사 **1 passed**, `pip check`·JavaScript 구문·DOM ID·`git diff --check` 통과. 신규 수동 UI는 HTTP 200 및 6종목 API로 확인했다.
+- 남은 검증: 사용자의 브라우저 시각 검토와 모바일 배치 확인. 브라우저 자동화 표면이 없어 시각 검증은 완료로 주장하지 않는다. 사용자 화면 검토 전 commit/push 금지. 기존 미커밋 변경과 기존 계좌는 보존한다.

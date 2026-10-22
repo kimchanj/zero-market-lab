@@ -743,3 +743,132 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   거래일 정수 1주를 살 수 없어 현금만 보유한 결과이며 UI에 설명한다.
 - 미국 Yahoo quote OHLC의 split-adjustment 의미는 미확인으로 표시하고 adjusted close는
   실행가격에 사용하지 않는다. 배당·환율은 제외한다. 사용자 검토 전 commit/push 보류.
+
+## 2026-10-22 — STEP 8.1 Comparison Research Workspace · 화면 검토 대기
+
+- `ZERO_MARKET_LAB_META.md`와 Child 문서를 확인했다. 기존 미커밋 Paper/Transit 변경은
+  보존하고, Research 화면은 차트 우선·Replay 화면은 Journal 우선으로 책임을 나눴다.
+- 기존 Asset Discovery 화면에 동일 날짜축 비교 차트, 선택 날짜 Context, Layer 추가·숨김·제거,
+  Actual/Normalize 100, FECM Phase 및 Solar Gate Band를 배치했다. 현재 연결된 것은 로컬
+  6종목·S&P 500 가격지수·Phase·Transit이다. VIX/Fear & Greed/금리/환율/금/수급은
+  미연결로 표시하며 수치나 RISK-OFF 결론을 생성하지 않는다.
+- 로컬 가격은 마지막 실제 관측일까지만 표시하고 시장별 휴장 차이는 결측으로 남긴다.
+  Gate 메타데이터 64개를 참조 JSON으로 기록했으며 해석과 금융 관측을 분리했다.
+- 신규 단위 테스트 5개와 전체 308개 테스트를 통과했다. 브라우저에서 Layer 추가·제거,
+  S&P 500 비교, 날짜 클릭 고정, Transit 복원, 미연결 표시를 확인했다.
+- 사용자 화면 검토 전 commit/push하지 않는다. STEP 9 통계 연구는 시작하지 않았다.
+
+## 2026-10-22 — STEP 8.2 Full-width Comparison Research Workspace · 화면 검토 대기
+
+- Research 비교 영역을 하나의 전체폭 금융 Plot으로 재배치했다. 상단 기간 바로가기
+  (1M/3M/6M/1Y/3Y/ALL/SIM), Layer 선택·숨김·제거, 같은 날짜의 압축형 OHLCV·
+  가격 비교·Phase·Transit 요약을 추가했다. Actual은 원단위별 가격축,
+  Normalize 100은 기간 첫 관측값 기준 상대 변화다. 전략 엔진과 Paper 계좌는 변경하지 않았다.
+- 64 Gate의 한글 짧은 해석 메타데이터와 4 Quarter(각 16 Gate)의 시작·전환·끝
+  기준을 참조 파일로 기록했다. Quarter/Gate 밴드는 가격 차트와 날짜축을 공유하고
+  휴장일에 시세를 만들지 않는다. Human Design 해석은 시장 인과관계로 주장하지 않는다.
+- VIX/Fear & Greed/금리/환율/금/한국 투자주체별 수급은 연결 원천과
+  재배포 권한을 확정하지 못해 N/A로 유지했다. 후보·출처·라이선스 검토는
+  `docs/comparison-layer-architecture.md`에 기록했다.
+- Python 전체 310개 및 STEP 8.2 집중 18개, JS Hover 9개 테스트 통과.
+  `pip check`, JS 구문, `git diff --check`도 통과했다. 브라우저에서
+  단일 Plot, Quarter/Gate, 미연결 표시, Gate 32.2, 비교시장 비동시 관측,
+  빠른 기간과 SIM 기간 연동을 확인했다. 화면 증빙은 Git 제외 artifacts에 보관한다.
+- 기존 미커밋 변경과 Git 기준선은 보존한다. 사용자 화면 검토 전 commit/push하지 않는다.
+  STEP 9는 시작하지 않았다.
+
+## 2026-10-22 — STEP 8.2 UI 보정 + STEP 8.3 실제 시장 맥락 연결 · 부분 완료
+
+- STEP 8.2 비교 화면의 헤더·조건 영역을 압축하고 날짜 요약판의 가격/수급/시장지표/
+  Research 그룹과 글자 크기를 조정했다. 마우스 이동으로 날짜별 값이 바뀌며 클릭 고정,
+  동일 날짜 재클릭·Esc 해제, 차트 이탈 시 최신 거래일 복귀를 브라우저에서 확인했다.
+  Quarter 밴드를 유지하고 전환 관문 25/15/46의 가이드는 가격축과 무관한
+  해당 관문 날짜 구간의 수평 점선으로 표시한다.
+- FRED의 VIXCLS, DGS10, DEXKOUS, DTWEXBGS 공식 CSV를 내려받아 2016년 이후
+  로컬 전용 append-only 스냅샷으로 저장했다. UI에는 VIX/10Y/USD-KRW/광의 달러지수를
+  기본 선택하며 원관측일, 보수적 공개 지연 가정, 결측·오래된 값 구분을 표시한다.
+  `DTWEXBGS`는 ICE DXY가 아니다. 원천 SHA-256과 날짜/행수, 역사 수정 검출을 기록한다.
+- KRX 개별종목 개인/기관/외국인 수급은 공인된 다운로드 방식과 이용 조건을
+  확인하지 못해 여전히 `NOT_CONNECTED`다. Gold, Fear & Greed, ICE DXY,
+  프로그램 매매·시장 폭도 미연결로 유지한다. 실제 값이나 위험판정을 만들지 않았다.
+  출처·범위·라이선스·날짜 결합 제한은 `docs/market-context-source-audit.md`에 기록했다.
+- Python 전체 314개, JS Hover 9개, `pip check` 통과. 브라우저의 실제 로컬
+  시장 맥락 표시와 날짜 상호작용을 확인했다. 화면 증빙은 Git 제외 artifacts에 저장.
+  기존 미커밋 변경은 보존하며 사용자 검토 전 commit/push하지 않는다. STEP 9 미시작.
+
+### 사용량 중단 후 이어받기 검증
+
+- 중단된 Working Tree를 그대로 이어받아 추가 구현을 반복하지 않았다. FRED 4개
+  지표의 명칭을 단위에 맞춰 명확히 하고, `scripts/validate_market_context_snapshot.py`로
+  원본 CSV와 처리 Parquet의 겹치는 전 관측값 및 각 3개 표본을 대조했다.
+  4개 지표 모두 일치했으며 역사 수정·SHA-256 검사 계약도 유지된다.
+- `docs/market-context-data-foundation.md`에 연결 원천, 단위, 기간, 관측일과
+  보수적 이용 가능 지연, 결측·권리 제한, 표본을 기록했다. Transit 문서에는
+  전환 Gate 수평 표시의 의미와 좁은 화면에서의 한계를 적었다.
+- 최종 전체 Python 314개, JS Hover 9개, `pip check`, JS 구문,
+  `git diff --check` 통과. 이전 브라우저 세션에서 Hover 날짜 변경, 클릭 고정,
+  Esc 해제, Mouse Leave 복귀와 FRED 4개 값·관측일을 확인했다.
+  KRX 수급 및 기타 미연결 지표는 정직하게 N/A로 유지한다.
+- 이어받기 브라우저 회귀: Chrome 로컬 화면에서 Hover A/B/C는 2026-03-05,
+  04-30, 07-01로 각각 바뀌었고 종가·VIX·10Y·원/달러·광의 달러·Gate.Line
+  값도 날짜에 따라 달라졌다. 03-05를 클릭 고정한 채 다른 날짜로
+  이동해도 유지됐고, Esc 후 04-30으로 바뀌며 차트 이탈 시 최신
+  10-08로 복귀했다. 25/15/46 전환 라벨과 ALL 범위의 10 전환,
+  1M/3M/6M/1Y/3Y/ALL/SIM 기간 입력, KRX 수급 N/A를 확인했다.
+  데스크톱 캡처는 Git 제외 `artifacts/step8_3_resume_desktop.png`다.
+
+### STEP 8.3 차트 중심 Research UI 단순화 · 화면 검토 대기
+
+- 비교 대상은 서버 Catalog의 `AVAILABLE` 및 연구 맥락 항목만 검색형
+  `+ 비교 추가` Popover에 노출한다. 미연결 지표는 메인 화면에서 숨기고
+  접힌 데이터 상태 상세에만 보존했다. 활성 항목은 작은 Chip으로 표시한다.
+- 상시 날짜 요약판을 제거하고 차트 안의 작은 Hover Tooltip으로 OHLCV,
+  등락률, 선택한 연결 지표, Phase, Gate.Line/Center/Keynote/Quarter를
+  옮겼다. 클릭으로 날짜를 고정하며 Esc/닫기로 해제한다. 이전 관측값은
+  원관측일을 표시하고 결측을 채우지 않는다.
+- 전환 관문 25/46/15/10은 날짜축 시작 위치의 세로 점선으로 변경했다.
+  Quarter 시작 실선과 색상 밴드, 확대 시 Gate.Line 표시는 유지한다.
+  전략·Paper·Phase·Transit 계산 엔진은 수정하지 않았다.
+- 1920×1080 Chrome에서 차트 1813×610px, 기본 Tooltip 숨김,
+  Popover 검색/미연결 숨김, VIX 추가, Hover 날짜 변경, 클릭 고정,
+  Esc 해제 및 ALL 구간 Gate 10을 확인했다. 화면 증빙은 Git 제외
+  `artifacts/step8_3_chart_first_desktop.png`에 저장했다.
+- Python 전체 314개와 JS Hover 9개 통과, `pip check` 및 JS 구문
+  검증 통과. 브라우저 자동 시나리오도 통과했다.
+- 사용자 화면 검토 전 commit/push하지 않으며 STEP 9는 시작하지 않는다.
+
+## 2026-10-22 — STEP 8.4 Chrome 안정화 · 사용자 화면 검토 대기
+
+- 테스트가 통과한 뒤에도 실제 사용자 녹화에서 비교 실행 상태줄에
+  `Cannot set properties of null (setting 'textContent')` 오류가 보였다.
+  영상은 이전 Research HTML을 열린 채로 사용했고, 새 스크립트가 선택적인
+  `cmp-data-status` 요소를 무조건 갱신한 것이 원인이었다. 요소가 없는
+  이전 탭을 재현하는 브라우저 회귀를 추가해 수정했다.
+- 600px 화면에서 `+ 비교 추가` 팝오버가 오른쪽으로 잘리는 문제를 찾아
+  좁은 화면에서 오른쪽 정렬했다. Chrome의 `/favicon.ico` 404도
+  서버의 204 응답으로 해결했다. 오류별 절차와 근거는
+  `docs/browser-stability-audit.md`에 기록했다.
+- 실제 Chrome에서 레이어·기간·자산 변경, Hover/Lock, 빠른 이동,
+  Transit, 확대·이동, 재로드, 이전 DOM 및 마지막 관측 Macro를 반복했다.
+  최종 Console/Runtime 오류 0, Network 실패 0, Unhandled Promise 0.
+  차트 Canvas 수와 Transit Marker는 반복 후에도 안정적으로 유지됐다.
+- 이어서 약 8분 동안 1M/ALL·Hover·US10Y 추가/삭제·Popover 조작을
+  26회전 지속 실행했다. 기본 시나리오와 합쳐 약 10분의 Chrome 조작에서
+  오류 수는 0/0/0으로 유지됐고, 마지막 ALL 구간의 Canvas 7개·전환
+  Marker 25개·Gate Tile 398개를 확인했다.
+- 추가 Browser 회귀에서 2026-07-03 삼성전자 거래일의 S&P 500 결측을
+  실제 Hover로 확인했다. 화면은 `관측 없음`을 보이며 null/NaN을
+  노출하지 않았다. 최종 19개 Checkpoint와 오류 수 0/0/0이 통과했다.
+- Python 전체 314개, 기존 JS 9개, Browser 회귀, `pip check`, JS 구문,
+  `git diff --check`가 통과했다. 기존 Working Tree를 보존하며 사용자
+  화면 확인 전 commit/push하지 않는다. STEP 9 미시작.
+
+## 2026-10-22 — STEP 8 Stable Checkpoint · 최종 검증
+
+- 사용자 화면 검토에서 기존 Browser Runtime 오류가 해결된 것을 확인하고,
+  STEP 7–8 누적 작업의 Stable Checkpoint commit 및 `origin/main` push를 승인받았다.
+- 최종 재검증: Python 314개, JS 9개, Browser 19개 Checkpoint 통과.
+  Browser Console Error / Network Failure / Unhandled Promise는 모두 0건이다.
+  `pip check`, JS 구문 검사, `git diff --check`도 통과했다.
+- 원시 시세, 처리 스냅샷, SQLite runtime, 브라우저 캡처와 로컬 secret은
+  Git 제외 상태로 유지한다. STEP 9 연구는 시작하지 않는다.

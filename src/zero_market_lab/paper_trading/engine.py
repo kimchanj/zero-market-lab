@@ -24,6 +24,11 @@ STRATEGY_VERSION = "strategy-family-s1-v1"
 FILL_RULE_VERSION = "daily-ohlcv-s1-v1"
 FEE_MODEL_VERSION = "paper-research-cost-v1"
 MODES = ("HISTORICAL_REPLAY", "LIVE_FORWARD")
+REPLAY_STRATEGIES = {
+    "S0_BUY_AND_HOLD": ("paper-s0-replay-v1", "daily-ohlcv-s0-v1"),
+    "S2_FIXED_TP_SL": ("paper-s2-replay-v1", "daily-ohlcv-s2-v1"),
+    "S7_BREAKOUT_TREND_FOLLOWING": ("paper-s7-replay-v1", "daily-ohlcv-s7-v1"),
+}
 
 
 def _market_today(currency: str) -> date:
@@ -100,23 +105,30 @@ def _records(con: sqlite3.Connection, account: str, kind: str) -> list[dict]:
 def create_account(con: sqlite3.Connection, *, name: str, symbol: str, currency: str,
                    capital: Decimal, start_date: str, mode: str = "HISTORICAL_REPLAY",
                    entry_offset_pct: Decimal = Decimal("-1"), tp_pct: Decimal = Decimal("5"),
+                   buy_budget: Decimal | None = None,
+                   strategy_id: str = STRATEGY_ID,
                    buy_fee_rate: Decimal = Decimal("0.00015"),
                    sell_fee_rate: Decimal = Decimal("0.00015"),
                    sell_tax_rate: Decimal = Decimal(0),
                    slippage_rate: Decimal = Decimal(0)) -> dict:
     date.fromisoformat(start_date)
     if (not name or ":" in name or mode not in MODES or capital <= 0
-            or currency not in {"KRW", "USD"} or not (-20 <= entry_offset_pct <= 0)
+            or currency not in {"KRW", "USD"} or strategy_id not in {STRATEGY_ID, *REPLAY_STRATEGIES}
+            or (strategy_id != STRATEGY_ID and mode != "HISTORICAL_REPLAY")
+            or not (-20 <= entry_offset_pct <= 0)
             or not (0 < tp_pct <= 100) or any(x < 0 for x in
                     (buy_fee_rate, sell_fee_rate, sell_tax_rate, slippage_rate))
             or any(x >= 1 for x in (buy_fee_rate, sell_fee_rate, sell_tax_rate))
-            or slippage_rate > Decimal("0.05")):
+            or slippage_rate > Decimal("0.05")
+            or (buy_budget is not None and (mode != "HISTORICAL_REPLAY"
+                or not buy_budget.is_finite() or buy_budget != buy_budget.to_integral_value()
+                or not 0 < buy_budget <= capital))):
         raise ValueError("Invalid account configuration")
     if mode == "LIVE_FORWARD" and date.fromisoformat(start_date) < _market_today(currency):
         raise ValueError("LIVE_FORWARD start_date cannot be in the past")
     config = {"name": name, "symbol": symbol, "currency": currency,
               "start_date": start_date, "initial_capital": str(capital), "mode": mode,
-              "strategy_id": STRATEGY_ID, "strategy_version": STRATEGY_VERSION,
+              "strategy_id": strategy_id, "strategy_version": STRATEGY_VERSION,
               "entry_offset_pct": str(entry_offset_pct), "tp_pct": str(tp_pct),
               "buy_fee_rate": str(buy_fee_rate), "sell_fee_rate": str(sell_fee_rate),
               "sell_tax_rate": str(sell_tax_rate), "slippage_rate": str(slippage_rate),
@@ -124,6 +136,18 @@ def create_account(con: sqlite3.Connection, *, name: str, symbol: str, currency:
               "fill_rule_version": FILL_RULE_VERSION,
               "phase_engine_version": PHASE_VERSION,
               "phase_rule_config_hash": RULE_CONFIG_HASH}
+    if buy_budget is not None:
+        config["buy_budget"] = str(buy_budget)
+        if strategy_id == STRATEGY_ID:
+            config["strategy_version"] = "paper-s1-budget-v1"
+            config["fill_rule_version"] = "daily-ohlcv-s1-budget-v1"
+    if strategy_id in REPLAY_STRATEGIES:
+        config["strategy_version"], config["fill_rule_version"] = REPLAY_STRATEGIES[strategy_id]
+    if strategy_id == "S2_FIXED_TP_SL":
+        config["stop_loss_pct"] = "3"
+    if strategy_id == "S7_BREAKOUT_TREND_FOLLOWING":
+        config["breakout_lookback"] = 20
+        config["exit_lookback"] = 10
     with con:
         con.execute("INSERT INTO accounts VALUES (?,?,?,?)",
                     (name, _stamp(), _canonical(config), _hash(config)))
@@ -229,6 +253,8 @@ def run_day(con: sqlite3.Connection, account: str, as_of_date: str, frame: pd.Da
     phase = PhaseEngine().run(prefix, symbol=cfg["symbol"],
                               data_source=provenance.get("provider", "UNVERIFIED"))["rows"][-1]
     currency = cfg["currency"]
+    buy_budget = _d(cfg["buy_budget"]) if "buy_budget" in cfg else None
+    strategy_id = cfg["strategy_id"]
     fee_config = CostConfig(buy_fee_rate=_d(cfg["buy_fee_rate"]),
                             sell_fee_rate=_d(cfg["sell_fee_rate"]),
                             sell_tax_rate=_d(cfg["sell_tax_rate"]))
@@ -250,15 +276,28 @@ def run_day(con: sqlite3.Connection, account: str, as_of_date: str, frame: pd.Da
     prior_orders = _records(con, account, "ORDER")
     pending_sell = next((o for o in reversed(prior_orders) if o["side"] == "SELL"
                          and not any(e["order_id"] == o["order_id"] for e in _records(con, account, "EXECUTION"))), None)
-    prior_buy = (prior_orders[-1] if prior_orders and old and prior_orders[-1]["side"] == "BUY"
+    prior_buy = (prior_orders[-1] if strategy_id != "S0_BUY_AND_HOLD" and prior_orders and old
+                 and prior_orders[-1]["side"] == "BUY"
                  and prior_orders[-1]["valid_after"] == old[-1]["journal_date"] else None)
     if not old:  # S0 benchmark starts at first paper bar; S1 waits for its first close decision.
         bench_qty = affordable_quantity(bench_cash, open_price, Decimal(1), fees, slip_rate)
         if bench_qty:
             notional = bench_qty * open_price
             bench_cash -= required_buy_cash(bench_qty, open_price, fees, slip_rate)
-    if qty > 0 and pending_sell and high >= _d(pending_sell["requested_price"]):
-        fill = _d(pending_sell["requested_price"])
+    sell_fill = None
+    if qty > 0 and pending_sell:
+        if strategy_id == "S7_BREAKOUT_TREND_FOLLOWING":
+            sell_fill = open_price
+        elif strategy_id == "S2_FIXED_TP_SL" and "stop_price" in pending_sell:
+            stop = _d(pending_sell["stop_price"])
+            if low <= stop:
+                sell_fill = open_price if open_price <= stop else stop
+            elif high >= _d(pending_sell["requested_price"]):
+                sell_fill = _d(pending_sell["requested_price"])
+        elif high >= _d(pending_sell["requested_price"]):
+            sell_fill = _d(pending_sell["requested_price"])
+    if sell_fill is not None:
+        fill = sell_fill
         gross = qty * fill
         fee, tax = fees.sell_fee(gross), fees.tax(gross)
         slip = _money(gross * slip_rate, currency)
@@ -269,32 +308,70 @@ def run_day(con: sqlite3.Connection, account: str, as_of_date: str, frame: pd.Da
                      "execution_date": as_of_date, "fill_price": str(fill), "quantity": str(qty),
                      "gross_amount": str(gross), "fee": str(fee), "tax": str(tax),
                      "slippage": str(slip), "net_amount": str(gross-fee-tax-slip),
-                     "realized_pnl": str(pnl), "fill_rule_version": FILL_RULE_VERSION}
+                     "realized_pnl": str(pnl), "fill_rule_version": cfg["fill_rule_version"]}
         qty = entry_price = entry_cost = Decimal(0)
         order_status = "FILLED"
-    elif qty == 0 and prior_buy and prior_buy["valid_after"] < as_of_date:
-        limit = _to_tick(open_price * (Decimal(1) + _d(cfg["entry_offset_pct"]) / 100),
-                         up=False, stock=stock, default_tick=tick)
-        if low <= limit:
-            bought = affordable_quantity(cash, limit, Decimal(1), fees, slip_rate)
+    elif qty == 0 and ((prior_buy and prior_buy["valid_after"] < as_of_date)
+                       or (strategy_id == "S0_BUY_AND_HOLD" and not old)):
+        open_fill = strategy_id in {"S0_BUY_AND_HOLD", "S7_BREAKOUT_TREND_FOLLOWING"}
+        limit = (open_price if open_fill else
+                 _to_tick(open_price * (Decimal(1) + _d(cfg["entry_offset_pct"]) / 100),
+                          up=False, stock=stock, default_tick=tick))
+        if open_fill or low <= limit:
+            available = min(cash, buy_budget) if buy_budget is not None else cash
+            bought = affordable_quantity(available, limit, Decimal(1), fees, slip_rate)
             if bought:
                 gross = bought * limit
                 fee, slip = fees.buy_fee(gross), _money(gross * slip_rate, currency)
                 entry_cost = gross + fee + slip
                 cash -= entry_cost
                 qty, entry_price = bought, limit
-                execution = {"order_id": prior_buy["order_id"], "side": "BUY",
+                execution = {"order_id": (prior_buy["order_id"] if prior_buy else
+                                          f"{account}:{as_of_date}:BUY"), "side": "BUY",
                              "execution_date": as_of_date, "fill_price": str(limit),
                              "quantity": str(qty), "gross_amount": str(gross),
                              "fee": str(fee), "tax": "0", "slippage": str(slip),
                              "net_amount": str(entry_cost), "realized_pnl": "0",
-                             "fill_rule_version": FILL_RULE_VERSION}
+                             "fill_rule_version": cfg["fill_rule_version"]}
                 order_status = "FILLED"
             else:
                 order_status = "BUY_BLOCKED_INSUFFICIENT_CAPITAL"
         else:
             order_status = "LIMIT_NOT_TOUCHED"
-    if qty > 0:
+    if strategy_id == "S0_BUY_AND_HOLD":
+        if not old and execution:
+            decision, reason = "BUY", "Precommitted first-session open purchase"
+            order = {"order_id": execution["order_id"], "decision_id": f"{account}:{as_of_date}:DECISION",
+                     "symbol": cfg["symbol"], "side": "BUY", "order_type": "START_OPEN_CONTROL",
+                     "requested_price": str(open_price), "quantity": str(qty),
+                     "valid_after": as_of_date, "status": "FILLED"}
+        else:
+            decision, reason, order = ("HOLD", "Buy-and-hold position retained", None) if qty else (
+                "CASH", "Initial open purchase unaffordable; no later entry", None)
+    elif strategy_id == "S7_BREAKOUT_TREND_FOLLOWING":
+        prior_highs = prefix.iloc[-21:-1]["high"] if len(prefix) >= 21 else []
+        prior_lows = prefix.iloc[-11:-1]["low"] if len(prefix) >= 11 else []
+        if qty > 0 and len(prior_lows) == 10 and close < _d(min(prior_lows)):
+            decision, reason = "SELL", "Close below prior 10-session low; next open exit"
+            order = {"order_id": f"{account}:{as_of_date}:SELL", "decision_id": f"{account}:{as_of_date}:DECISION",
+                     "symbol": cfg["symbol"], "side": "SELL", "order_type": "NEXT_SESSION_OPEN",
+                     "requested_price": "NEXT_OPEN", "quantity": str(qty),
+                     "valid_after": as_of_date, "status": "PENDING"}
+        elif qty > 0:
+            decision, reason, order = "HOLD", "No 10-session exit signal", None
+        elif len(prior_highs) == 20 and close > _d(max(prior_highs)):
+            available = min(cash, buy_budget) if buy_budget is not None else cash
+            if available >= required_buy_cash(Decimal(1), close, fees, slip_rate):
+                decision, reason = "BUY", "Close above prior 20-session high; next open entry"
+                order = {"order_id": f"{account}:{as_of_date}:BUY", "decision_id": f"{account}:{as_of_date}:DECISION",
+                         "symbol": cfg["symbol"], "side": "BUY", "order_type": "NEXT_SESSION_OPEN",
+                         "requested_price": "NEXT_OPEN", "quantity": "MAX_WITHIN_BUY_BUDGET",
+                         "valid_after": as_of_date, "status": "PENDING"}
+            else:
+                decision, reason, order = "CASH", "Breakout detected but buy budget cannot fund one share", None
+        else:
+            decision, reason, order = "CASH", "No 20-session breakout signal", None
+    elif qty > 0:
         target = _to_tick(entry_price * (Decimal(1) + _d(cfg["tp_pct"]) / 100),
                           up=True, stock=stock, default_tick=tick)
         if pending_sell and not execution:
@@ -302,26 +379,36 @@ def run_day(con: sqlite3.Connection, account: str, as_of_date: str, frame: pd.Da
         else:
             decision, reason = "SELL", "Place take-profit order for a later session"
             order = {"order_id": f"{account}:{as_of_date}:SELL", "decision_id": f"{account}:{as_of_date}:DECISION",
-                     "symbol": cfg["symbol"], "side": "SELL", "order_type": "GTC_LIMIT",
+                     "symbol": cfg["symbol"], "side": "SELL",
+                     "order_type": "BRACKET_TP_SL" if strategy_id == "S2_FIXED_TP_SL" else "GTC_LIMIT",
                      "requested_price": str(target), "quantity": str(qty),
                      "valid_after": as_of_date, "status": "PENDING"}
+            if strategy_id == "S2_FIXED_TP_SL":
+                order["stop_price"] = str(_to_tick(
+                    entry_price * (Decimal(1) - _d(cfg["stop_loss_pct"]) / 100),
+                    up=False, stock=stock, default_tick=tick))
     else:
         one_share = required_buy_cash(Decimal(1), close, fees, slip_rate)
-        if cash < one_share:
+        available = min(cash, buy_budget) if buy_budget is not None else cash
+        if available < one_share:
             decision, reason, order = "CASH", "NOT_AFFORDABLE at today's close", None
         else:
             decision, reason = "BUY", "Queue next-session Open-offset limit order"
             order = {"order_id": f"{account}:{as_of_date}:BUY", "decision_id": f"{account}:{as_of_date}:DECISION",
                      "symbol": cfg["symbol"], "side": "BUY", "order_type": "NEXT_SESSION_OPEN_OFFSET_LIMIT",
-                     "requested_price": f"OPEN{cfg['entry_offset_pct']}%", "quantity": "MAX_AFFORDABLE",
+                     "requested_price": f"OPEN{cfg['entry_offset_pct']}%",
+                     "quantity": "MAX_WITHIN_BUY_BUDGET" if buy_budget is not None else "MAX_AFFORDABLE",
                      "valid_after": as_of_date, "status": "PENDING"}
     decision_row = {"decision_id": f"{account}:{as_of_date}:DECISION", "account_id": account,
                     "decision_date": as_of_date, "symbol": cfg["symbol"],
                     "strategy_id": cfg["strategy_id"], "strategy_version": cfg["strategy_version"],
                     "strategy_config_hash": config_hash, "phase_engine_version": PHASE_VERSION,
-                    "phase_snapshot": phase["current_phase"], "signal": decision,
-                    "decision": decision, "reason": reason, "reference_price": str(close),
-                    "available_at": phase["available_at"]}
+                    "phase_snapshot": (None if strategy_id == "S0_BUY_AND_HOLD" and not old
+                                       else phase["current_phase"]), "signal": decision,
+                    "decision": decision, "reason": reason,
+                    "reference_price": str(open_price if strategy_id == "S0_BUY_AND_HOLD" and not old else close),
+                    "available_at": ("PRECOMMITTED_START_OPEN" if strategy_id == "S0_BUY_AND_HOLD"
+                                     and not old else phase["available_at"])}
     value = cash + qty * close
     unrealized = qty * close - entry_cost if qty else Decimal(0)
     total = value - capital
@@ -350,7 +437,7 @@ def run_day(con: sqlite3.Connection, account: str, as_of_date: str, frame: pd.Da
               "adjustment_policy": provenance.get("adjustment", "UNKNOWN"),
               "source_bar_hash": _bar_hash(row),
               "source_history_hash": _history_hash(prefix),
-              "fee_model_version": FEE_MODEL_VERSION, "fill_rule_version": FILL_RULE_VERSION}
+              "fee_model_version": FEE_MODEL_VERSION, "fill_rule_version": cfg["fill_rule_version"]}
     con.execute("BEGIN IMMEDIATE")
     try:
         if execution:
