@@ -4,8 +4,9 @@
 <body><main>
 <header><nav><a href="#comparison-workspace">Research Comparison</a><a href="#investment-conditions">전략 시뮬레이션</a><a href="#robustness-panel">S1 안정성 검증</a><a href="#paper-panel">모의투자 준비</a><a href="../tiger_etf_v2/">TIGER 연구</a><a href="../samsung_strategy_family/">삼성전자 전략 비교</a></nav>
 <h1>ZERO MARKET LAB · 시장 연구</h1></header>
-<section id="comparison-workspace" class="comparison-workspace" aria-label="Research Comparison Workspace">
-  <div class="comparison-top"><h2>시장 비교 연구</h2><span title="관측 데이터의 탐색 화면이며 매매 신호가 아닙니다.">관측 전용 ⓘ</span></div>
+<details id="comparison-workspace" class="comparison-workspace" aria-label="Research Comparison Workspace" open>
+  <summary class="comparison-top"><h2>시장 비교 연구</h2><span title="관측 데이터의 탐색 화면이며 매매 신호가 아닙니다.">관측 전용 ⓘ</span></summary>
+  <div id="comparison-workspace-body">
   <div class="comparison-controls">
     <label>기준 자산<select id="cmp-base"></select></label>
     <label>시작일<input id="cmp-start" type="date"></label>
@@ -19,7 +20,7 @@
     <button type="button" data-cmp-range="6M">6M</button><button type="button" data-cmp-range="1Y">1Y</button>
     <button type="button" data-cmp-range="3Y">3Y</button><button type="button" data-cmp-range="ALL">ALL</button>
     <button type="button" data-cmp-range="SIM" title="마지막 투자조건 실행 기간">SIM</button>
-    <span id="cmp-range-note" class="sr-only">가격 관측 범위만 변경합니다.</span>
+    <span id="cmp-range-note" class="sr-only">선택 기간이 비교 실행에도 적용됩니다.</span>
   </div>
   <div class="comparison-layer-row"><div id="cmp-layers" class="comparison-layers" aria-label="선택된 비교 Layer"></div><div class="comparison-add-wrap"><button id="cmp-add" type="button" aria-expanded="false" aria-controls="cmp-picker">+ 비교 추가</button>
     <div id="cmp-picker" class="comparison-picker" hidden><strong>비교 대상 추가</strong><label class="comparison-search-label">검색<input id="cmp-search" type="search" placeholder="종목 또는 지표 검색" autocomplete="off"></label><div id="cmp-catalog"></div></div></div></div>
@@ -28,7 +29,8 @@
     <div id="cmp-context" class="comparison-context" aria-live="polite" hidden><div class="comparison-summary-title"><strong id="cmp-date">—</strong><span id="cmp-hover-mode">Hover</span><button id="cmp-unlock" type="button" title="날짜 고정 해제 (Esc)" hidden>✕</button></div><div id="cmp-context-body"></div></div>
     <div id="cmp-indicator-pane" class="comparison-indicator-pane" aria-label="수치 지표 상태" hidden></div><div id="cmp-quarter-band" class="comparison-quarter-band" aria-label="Human Design Four Quarters"></div><div id="cmp-transit-band" class="comparison-transit-band" aria-label="선택한 Transit Gate 구간"></div><p id="cmp-chart-note" class="note"></p></div>
   <div class="comparison-details"><details id="cmp-indicator-detail"><summary>지표 상세 · 값과 해석</summary><div id="cmp-indicator-detail-body">차트 날짜를 선택하면 값과 관측일을 확인할 수 있습니다.</div></details><details id="cmp-transit-detail"><summary>☉ 트랜짓 상세 · <span id="cmp-gate-head">—</span></summary><div id="cmp-gate-detail">관문을 선택하면 해석과 금융시장 관측을 분리해 표시합니다.</div></details><details><summary>데이터 상태 · 출처</summary><div id="cmp-provenance">시장 시세는 로컬 연구용 자료입니다.</div><div id="cmp-data-status"></div></details></div>
-</section>
+  </div>
+</details>
 <details class="panel" id="investment-conditions"><summary>1. 투자 조건</summary><div class="controls primary-controls">
 <label>시장<select id="market"><option value="ALL">한국 + 미국</option><option value="KRX">한국 · KRX</option><option value="US">미국 · US</option></select></label>
 <label class="isa-control"><span>ISA 후보</span><span><input id="isa-only" type="checkbox" checked> ISA 가능 종목만</span></label>

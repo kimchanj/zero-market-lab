@@ -872,3 +872,15 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   `pip check`, JS 구문 검사, `git diff --check`도 통과했다.
 - 원시 시세, 처리 스냅샷, SQLite runtime, 브라우저 캡처와 로컬 secret은
   Git 제외 상태로 유지한다. STEP 9 연구는 시작하지 않는다.
+
+## 2026-10-22 — Research 기간 동기화와 시장 비교 Accordion
+
+- 기간 Shortcut, 날짜 입력, 비교 API 요청을 단일 Research Period 상태로 연결했다.
+  1M/3M/6M/1Y/3Y/ALL/SIM 뒤 `비교 실행`이 같은 기간을 사용하며,
+  직접 날짜 변경은 Shortcut 활성 표시를 해제한다.
+- `시장 비교 연구` 전체를 기본 펼침 Accordion으로 묶었다. 다시 펼치거나 창을
+  조절하면 차트 폭·높이와 Transit Band를 재계산하고 날짜축 하단 여백을 둔다.
+- Chrome에서 전체 기간 Matrix, 혼합 Shortcut, 10회 접기·펼치기, 비교 Layer와
+  종목 변경, 1920×1080 화면 하단을 확인했다. Console/Network/Unhandled
+  오류는 0/0/0. Python 314개와 JS 9개, `pip check`, 문법·공백 검사 통과.
+- 전략·Paper·FECM·Transit 계산 로직은 변경하지 않았다. STEP 9 미시작.

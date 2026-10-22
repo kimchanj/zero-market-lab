@@ -5,6 +5,7 @@
   const colors = ['#6baaff', '#ffbb6b', '#7bdcba', '#e59ae8', '#ffe08a', '#ff8f9a'];
   let catalog = new Map(), packet = null, chart = null, chartSeries = [], lockedDate = null;
   let previewDate = null, generation = 0, investmentPeriod = null;
+  const researchPeriod = {startDate: '', endDate: '', shortcut: 'CUSTOM'};
   let quarters = new Map(), quarterByGate = new Map();
   let bandRenderId = 0;
   const calendarCache = new Map();
@@ -31,6 +32,20 @@
     first.setUTCDate(Math.min(day, lastDay));
     return first.toISOString().slice(0, 10);
   }
+  function setResearchPeriod(startDate, endDate, shortcut = 'CUSTOM') {
+    researchPeriod.startDate = startDate;
+    researchPeriod.endDate = endDate;
+    researchPeriod.shortcut = shortcut;
+    $('cmp-start').value = startDate;
+    $('cmp-end').value = endDate;
+    document.querySelectorAll('[data-cmp-range]').forEach(button =>
+      button.classList.toggle('active', button.dataset.cmpRange === shortcut));
+  }
+  function syncResearchPeriodFromInputs() {
+    const startDate = $('cmp-start').value, endDate = $('cmp-end').value;
+    if (startDate !== researchPeriod.startDate || endDate !== researchPeriod.endDate)
+      setResearchPeriod(startDate, endDate);
+  }
   function applyShortcut(kind) {
     const base = catalog.get($('cmp-base').value);
     if (kind === 'SIM' && !investmentPeriod) {
@@ -39,16 +54,17 @@
     }
     const end = kind === 'SIM' ? investmentPeriod?.[1] : base?.available_to;
     if (!end || (kind === 'SIM' && !investmentPeriod?.[0])) {
-      text('cmp-range-note', kind === 'SIM' ? '투자조건을 실행한 뒤 SIM 기간을 선택할 수 있습니다.' : '기준 자산의 관측기간이 없습니다.');
+      const message = kind === 'SIM' ? '투자조건을 실행한 뒤 SIM 기간을 선택할 수 있습니다.' : '기준 자산의 관측기간이 없습니다.';
+      text('cmp-range-note', message);
+      text('cmp-status', message);
       return;
     }
     const months = {"1M": 1, "3M": 3, "6M": 6, "1Y": 12, "3Y": 36};
     const start = kind === 'SIM' ? investmentPeriod[0] : kind === 'ALL' ? base.available_from : subtractMonths(end, months[kind]);
-    $('cmp-start').value = start < base.available_from ? base.available_from : start;
-    $('cmp-end').value = end > base.available_to ? base.available_to : end;
+    setResearchPeriod(start < base.available_from ? base.available_from : start,
+      end > base.available_to ? base.available_to : end, kind);
     $('cmp-year').value = '';
-    document.querySelectorAll('[data-cmp-range]').forEach(button => button.classList.toggle('active', button.dataset.cmpRange === kind));
-    text('cmp-range-note', `${kind} · 기준 자산 실제 관측기간 안에서 비교합니다. 전략 재계산 없음.`);
+    text('cmp-range-note', `${kind} · ${researchPeriod.startDate} ~ ${researchPeriod.endDate} · 비교 실행에도 적용됩니다.`);
     run();
   }
   function renderLayers() {
@@ -171,6 +187,20 @@
     for (const series of chartSeries) chart.removeSeries(series);
     chartSeries = [];
   }
+  function resizeChartToViewport() {
+    const element = $('cmp-chart');
+    if (!$('comparison-workspace').open || !element.clientWidth) return;
+    const top = element.getBoundingClientRect().top;
+    const height = Math.max(390, Math.min(610, Math.floor(window.innerHeight - top - 90)));
+    if (Math.abs(element.clientHeight - height) > 1) element.style.height = `${height}px`;
+    $('cmp-quarter-markers').style.height = `${height}px`;
+    $('cmp-context').style.maxHeight = `${height - 30}px`;
+    if (chart) chart.applyOptions({width: element.clientWidth, height});
+    renderBand();
+  }
+  function scheduleChartResize() {
+    requestAnimationFrame(() => requestAnimationFrame(resizeChartToViewport));
+  }
   function initChart() {
     if (chart || !window.LightweightCharts) return;
     const lib = window.LightweightCharts;
@@ -202,7 +232,12 @@
       if (!lockedDate) { previewDate = null; $('cmp-context').hidden = true; }
     });
     chart.timeScale().subscribeVisibleTimeRangeChange(() => renderBand());
-    new ResizeObserver(() => { chart.applyOptions({width: $('cmp-chart').clientWidth, height: $('cmp-chart').clientHeight}); renderBand(); }).observe($('cmp-chart'));
+    new ResizeObserver(() => {
+      const element = $('cmp-chart');
+      if (!element.clientWidth || !element.clientHeight) return;
+      chart.applyOptions({width: element.clientWidth, height: element.clientHeight});
+      renderBand();
+    }).observe($('cmp-chart'));
   }
   function chartPointCoordinate(dayTime) {
     if (!packet || !chart) return null;
@@ -313,6 +348,7 @@
     } catch (error) { text('cmp-chart-note', `Transit Band를 표시하지 못했습니다: ${error.message}`); }
   }
   function renderChart() {
+    resizeChartToViewport();
     initChart(); if (!chart || !packet) return;
     resetChart();
     const lib = window.LightweightCharts;
@@ -335,7 +371,8 @@
   }
   async function run() {
     const token = ++generation;
-    const base = $('cmp-base').value, start = $('cmp-start').value, end = $('cmp-end').value;
+    syncResearchPeriodFromInputs();
+    const base = $('cmp-base').value, start = researchPeriod.startDate, end = researchPeriod.endDate;
     if (!base || !start || !end) return;
     if (start > end) { text('cmp-status', '시작일이 종료일보다 늦습니다.'); return; }
     const ids = Array.from(selected.keys());
@@ -369,17 +406,23 @@
         option.textContent = item.display_name; base.append(option);
       }
       base.value = '005930';
-      const today = kstToday(); $('cmp-end').value = today; $('cmp-start').value = `${today.slice(0, 4)}-01-01`;
+      const today = kstToday();
+      setResearchPeriod(`${today.slice(0, 4)}-01-01`, today);
       for (let year = 2020; year <= Number(today.slice(0, 4)); year++) {
         const option = document.createElement('option'); option.value = year;
         option.textContent = year; $('cmp-year').append(option);
       }
       $('cmp-year').value = today.slice(0, 4);
-      base.addEventListener('change', () => { selected.delete(base.value); renderLayers(); renderPicker(); run(); });
+      base.addEventListener('change', () => {
+        selected.delete(base.value);
+        renderLayers(); renderPicker();
+        if (researchPeriod.shortcut !== 'CUSTOM') applyShortcut(researchPeriod.shortcut);
+        else run();
+      });
       $('cmp-year').addEventListener('change', () => {
         const year = $('cmp-year').value;
-        $('cmp-start').value = `${year}-01-01`;
-        $('cmp-end').value = year === today.slice(0, 4) ? today : `${year}-12-31`;
+        if (!year) return;
+        setResearchPeriod(`${year}-01-01`, year === today.slice(0, 4) ? today : `${year}-12-31`);
         run();
       });
       $('cmp-run').addEventListener('click', run);
@@ -388,8 +431,12 @@
         button.addEventListener('click', () => applyShortcut(button.dataset.cmpRange)));
       for (const id of ['cmp-start', 'cmp-end']) $(id).addEventListener('change', () => {
         $('cmp-year').value = '';
-        document.querySelectorAll('[data-cmp-range]').forEach(button => button.classList.remove('active'));
+        syncResearchPeriodFromInputs();
       });
+      $('comparison-workspace').addEventListener('toggle', () => {
+        if ($('comparison-workspace').open) scheduleChartResize();
+      });
+      window.addEventListener('resize', scheduleChartResize);
       window.addEventListener('zml:investment-period', event => {
         const period = event.detail;
         if (Array.isArray(period) && period.length === 2 && period.every(day => /^\d{4}-\d{2}-\d{2}$/.test(day))) {
@@ -421,6 +468,7 @@
         event.stopPropagation(); lockedDate = previewDate = null; $('cmp-context').hidden = true;
       });
       renderLayers(); renderPicker(); await run();
+      scheduleChartResize();
     } catch (error) { text('cmp-status', `Research Workspace 초기화 실패: ${error.message}`); }
   }
   init();

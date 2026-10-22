@@ -70,5 +70,24 @@ test. This verifies the scripted interactions, not every possible manual
 gesture or the user's already-open tab until refreshed.
 
 The full Python suite passed (314 tests), as did the nine existing JS tests,
-`pip check`, JavaScript syntax, and `git diff --check`. User screen confirmation remains required before
-commit/push or STEP 9.
+`pip check`, JavaScript syntax, and `git diff --check`. The STEP 8 checkpoint was
+subsequently approved and pushed; STEP 9 has not started.
+
+## Period and accordion follow-up
+
+The Research Workspace now uses one period state for shortcut selection, date
+inputs, and comparison requests. The chart and its Transit band render from the
+same response period. Manual dates clear the active shortcut; SIM without a
+saved investment period leaves the current period intact and reports why.
+
+The whole market comparison area uses a compact accordion, open by default.
+On reopening or window resize, the chart is measured again against the visible
+viewport with a 390–610 px chart range and room for its date axis and Transit
+band. At 1920×1080, the scripted Chrome check found the band inside the viewport.
+Ten close/open cycles retained the same chart canvas count and working hover.
+
+The expanded browser regression checks every shortcut followed by comparison
+execution, a sequential shortcut override, SIM, manual dates, layer/asset changes
+around accordion toggles, and the original market-context and old-DOM cases.
+Final isolated Chrome result: 0 console/runtime errors, 0 network failures,
+0 unhandled promises. Python 314 and JS 9 tests passed.

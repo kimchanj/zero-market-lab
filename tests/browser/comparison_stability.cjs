@@ -159,10 +159,80 @@ async function main() {
     await click(`[data-cmp-range="${key}"]`);await ready();
   }
   await mark('period-buttons');
+  for(const key of ['1M','3M','6M','1Y','3Y','ALL']) {
+    await click(`[data-cmp-range="${key}"]`);await ready();
+    const selectedPeriod=await js(`(()=>({start:document.querySelector('#cmp-start').value,
+      end:document.querySelector('#cmp-end').value,active:[...document.querySelectorAll('[data-cmp-range].active')]
+      .map(button=>button.dataset.cmpRange)}))()`);
+    assert.deepEqual(selectedPeriod.active,[key],`${key} active shortcut mismatch`);
+    await click('#cmp-run');await ready();
+    const after=await js(`(()=>{const requests=performance.getEntriesByType('resource')
+      .filter(item=>item.name.includes('/api/comparison/series?'));
+      const query=new URL(requests.at(-1).name).searchParams;
+      return {start:document.querySelector('#cmp-start').value,end:document.querySelector('#cmp-end').value,
+        requestedStart:query.get('start'),requestedEnd:query.get('end'),
+        active:[...document.querySelectorAll('[data-cmp-range].active')].map(button=>button.dataset.cmpRange)}})()`);
+    assert.equal(after.start,selectedPeriod.start,`${key} start reverted`);
+    assert.equal(after.end,selectedPeriod.end,`${key} end reverted`);
+    assert.equal(after.requestedStart,selectedPeriod.start,`${key} request start stale`);
+    assert.equal(after.requestedEnd,selectedPeriod.end,`${key} request end stale`);
+    assert.deepEqual(after.active,[key],`${key} active shortcut reverted`);
+  }
+  await mark('period-run-sync');
   await click('[data-cmp-range="SIM"]');
   await js(`window.dispatchEvent(new CustomEvent('zml:investment-period',{detail:['2026-08-25','2026-10-08']}))`);
   for(let i=0;i<3;i++){await click('[data-cmp-range="SIM"]');await ready();}
+  await click('#cmp-run');await ready();
+  assert(await js(`document.querySelector('#cmp-start').value==='2026-08-25'&&
+    document.querySelector('#cmp-end').value==='2026-10-08'&&
+    document.querySelector('[data-cmp-range="SIM"]').classList.contains('active')`),'SIM period reverted');
   await mark('sim');
+  await send('Emulation.setDeviceMetricsOverride',{width:1920,height:1080,deviceScaleFactor:1,mobile:false});
+  await delay(200);
+  const layout=await js(`(()=>{const chart=document.querySelector('#cmp-chart').getBoundingClientRect();
+    const band=document.querySelector('#cmp-transit-band').getBoundingClientRect();
+    return {chartWidth:chart.width,chartHeight:chart.height,bandBottom:band.bottom,viewport:innerHeight}})()`);
+  assert(layout.chartWidth>0&&layout.chartHeight>=390&&layout.bandBottom<layout.viewport,
+    'Chart date axis or Transit band below viewport: '+JSON.stringify(layout));
+  const canvasBefore=(await snapshot()).canvas;
+  for(let i=0;i<10;i++){
+    await click('#comparison-workspace>summary');
+    assert(await js(`!document.querySelector('#comparison-workspace').open`),'Accordion did not close');
+    await click('#comparison-workspace>summary');await delay(60);
+    assert(await js(`document.querySelector('#comparison-workspace').open`),'Accordion did not open');
+  }
+  const reopened=await js(`(()=>{const chart=document.querySelector('#cmp-chart');
+    return {width:chart.clientWidth,height:chart.clientHeight,canvas:chart.querySelectorAll('canvas').length}})()`);
+  assert(reopened.width>0&&reopened.height>0&&reopened.canvas===canvasBefore,
+    'Accordion reopen lost or duplicated chart: '+JSON.stringify(reopened));
+  await move(.5);assert(!(await snapshot()).hidden,'Hover failed after accordion reopen');
+  for(const key of ['1Y','3M','ALL','6M']){await click(`[data-cmp-range="${key}"]`);await ready();}
+  await click('#comparison-workspace>summary');
+  await click('#comparison-workspace>summary');
+  await click('#cmp-run');await ready();
+  assert(await js(`document.querySelector('[data-cmp-range="6M"]').classList.contains('active')`),
+    'Last shortcut lost after accordion and comparison run');
+  await add('VIX');
+  await click('#comparison-workspace>summary');
+  await click('#comparison-workspace>summary');
+  await move(.5);assert(!(await snapshot()).hidden,'Hover failed after layer and accordion cycle');
+  await remove('VIX');
+  await js(`document.querySelector('#cmp-base').value='000660';
+    document.querySelector('#cmp-base').dispatchEvent(new Event('change'))`);await ready();
+  await click('#comparison-workspace>summary');
+  await click('#comparison-workspace>summary');
+  assert((await snapshot()).status.includes('000660'),'Asset changed during accordion cycle');
+  await js(`document.querySelector('#cmp-base').value='005930';
+    document.querySelector('#cmp-base').dispatchEvent(new Event('change'))`);await ready();
+  await js(`const start=document.querySelector('#cmp-start');start.value='2026-07-01';
+    start.dispatchEvent(new Event('change'))`);
+  assert(await js(`document.querySelectorAll('[data-cmp-range].active').length===0`),
+    'Manual date did not clear shortcut');
+  await click('#cmp-run');await ready();
+  assert(await js(`document.querySelector('#cmp-start').value==='2026-07-01'`),
+    'Manual date reverted after comparison run');
+  await mark('accordion-resize');
+  await send('Emulation.clearDeviceMetricsOverride');
   for(const symbol of ['000660','035420','005930','000660','035420','005930']){
     await js(`document.querySelector('#cmp-base').value=${JSON.stringify(symbol)};document.querySelector('#cmp-base').dispatchEvent(new Event('change'))`);
     await ready();assert((await snapshot()).status.includes(symbol),'Old base response visible');

@@ -110,3 +110,13 @@ body>main{max-width:none;padding:12px 18px}
 .comparison-transit-band button{height:16px;font-size:9px}
 @media(max-width:850px){.comparison-chart,.comparison-quarter-markers{height:450px}.comparison-context{max-height:420px}.comparison-picker{left:auto;right:0}}
 @media(max-width:550px){body>main{padding:8px}.comparison-chart,.comparison-quarter-markers{height:380px}.comparison-context{max-height:350px}.comparison-picker{left:auto;right:0}.comparison-controls label{width:calc(50% - 5px)}}
+
+/* The whole market workspace folds as one compact section. Chart height is
+   measured against the visible viewport when it opens or the window resizes. */
+.comparison-workspace>summary.comparison-top{display:flex;align-items:center;cursor:pointer;list-style:none;margin:0;padding:0 2px 5px}
+.comparison-workspace>summary.comparison-top::-webkit-details-marker{display:none}
+.comparison-workspace>summary.comparison-top::before{content:'▾';font-size:14px;color:#8bb9e9;margin-right:7px}
+.comparison-workspace:not([open])>summary.comparison-top::before{content:'▸'}
+.comparison-workspace:not([open])>summary.comparison-top{padding-bottom:0}
+.comparison-plot{padding-bottom:11px}
+.comparison-transit-band{margin-bottom:2px}
