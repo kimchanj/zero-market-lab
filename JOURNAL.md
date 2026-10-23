@@ -884,3 +884,28 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   종목 변경, 1920×1080 화면 하단을 확인했다. Console/Network/Unhandled
   오류는 0/0/0. Python 314개와 JS 9개, `pip check`, 문법·공백 검사 통과.
 - 전략·Paper·FECM·Transit 계산 로직은 변경하지 않았다. STEP 9 미시작.
+
+## 2026-10-23 — STEP 9 Transit × Market Context Research v1 · 검토 완료
+
+- `ZERO_MARKET_LAB_META.md`와 기존 연구·데이터 정책을 확인하고 결과 조회 전에
+  가설, 반증 조건, 기간, 동일 계절 Random Window, Pre/Post, Phase 및 64 Gate
+  상태 기준을 `docs/research/transit-market-study-v1-plan.md`에 사전등록했다.
+- 삼성전자 Pilot 구조 검증 뒤 삼성전자·SK하이닉스·SP500 가격지수의 공통 실제 관측
+  2020-08-24~2026-10-02를 같은 기준으로 분석했다. 전체 1,176 Window 중
+  1,122개가 완료 기준을 만족하고, 192개 자산×Gate 요약을 전부 보존했다.
+  2026 Gate 32는 아직 관측 구간 밖이라 결과를 생성하지 않았다.
+- Gate 32는 세 자산 모두 `NO EVIDENCE`였다. 연도별 방향이 엇갈리고 Random
+  Percentile이 극단적이지 않으며 평균 Return Bootstrap 구간은 모두 0을 포함했다.
+  64 Gate 전체에서도 `MODERATE`나 `STRONG`은 없었다. 관찰·반증·제약을
+  `docs/research/transit-market-study-v1.md`에 함께 기록했다.
+- Seed 42의 전체 실행을 재현해 Window/Gate/Quarter CSV 해시가 일치함을 확인했다.
+  원시·파생 시장자료와 차트는 Git 제외 경로에만 두었다. Strategy/Paper/Phase/Transit
+  엔진 및 기존 Research UI는 수정하지 않았다.
+- 최종 검증: Python 전체 324개 PASS, 신규 Synthetic 연구 테스트 10개 PASS,
+  JS Hover 9개 PASS, Browser 회귀 21 Checkpoint PASS(Console/Network/Unhandled
+  0/0/0). `pip check`, `git diff --check` 통과. 최초 JS/전체 Python 검증의
+  샌드박스 자식 프로세스·소켓 제한은 허용된 환경에서 재실행해 해소했다.
+  Gate 32 연도별 막대차트와 64 Gate 전체 히트맵을 실제 Chrome으로 렌더링해
+  제목/부제 및 플롯 표시를 확인했다.
+  사용자 화면·보고서 검토 전 commit/push하지 않았고, 2026-10-24에 연구결과의
+  독립 Research Checkpoint commit/push 승인을 받았다. STEP 10은 시작하지 않는다.
