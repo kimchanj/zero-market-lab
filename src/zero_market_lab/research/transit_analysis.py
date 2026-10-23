@@ -24,6 +24,7 @@ from zero_market_lab.transit.quarters import load_quarters
 
 
 ASSETS = ("005930", "000660", "SP500")
+VALIDATION_ASSETS = ("NVDA", "MSFT", "AAPL")
 CONTEXT = ("VIX", "US10Y", "USDKRW", "BROAD_USD")
 MAX_AGE = {"VIX": 10, "US10Y": 21, "USDKRW": 35, "BROAD_USD": 35}
 METRIC_COLUMNS = ("return_pct", "max_drawdown_pct", "max_runup_pct",
@@ -220,12 +221,15 @@ def _adjacent_return(frame: pd.DataFrame, positions: list[int], before: bool) ->
 
 def asset_windows(symbol: str, frame: pd.DataFrame, *, root: Path,
                   config: StudyConfig, intervals: list[dict],
-                  snapshots: dict[str, tuple[pd.DataFrame, dict] | None]) -> list[dict]:
+                  snapshots: dict[str, tuple[pd.DataFrame, dict] | None],
+                  currency: str | None = None) -> list[dict]:
     data = validate_asset(frame)
     data = data.loc[(data["date"] >= config.start) & (data["date"] <= config.end)].reset_index(drop=True)
     if data.empty:
         raise ValueError(f"No {symbol} bars in study period")
-    currency = "USD" if symbol == "SP500" else "KRW"
+    currency = currency or ("USD" if symbol == "SP500" else "KRW")
+    if currency not in {"USD", "KRW"}:
+        raise ValueError("Unsupported market-close currency")
     starts = [datetime.fromisoformat(item["start_utc"]) for item in intervals]
     groups: dict[int, list[int]] = {index: [] for index in range(len(intervals))}
     gate_lines: dict[int, list[int]] = {index: [] for index in range(len(intervals))}
@@ -377,8 +381,10 @@ def quarter_summary(windows: pd.DataFrame) -> pd.DataFrame:
         median_volatility=("daily_volatility_pct", "median")).reset_index()
 
 
-def run_study(root: Path, config: StudyConfig, assets: tuple[str, ...] = ASSETS) -> dict:
-    if any(symbol not in ASSETS for symbol in assets):
+def run_study(root: Path, config: StudyConfig, assets: tuple[str, ...] = ASSETS,
+              dataset_role: str = "DISCOVERY") -> dict:
+    allowed = ASSETS if dataset_role == "DISCOVERY" else VALIDATION_ASSETS if dataset_role == "VALIDATION" else ()
+    if not assets or len(set(assets)) != len(assets) or any(symbol not in allowed for symbol in assets):
         raise ValueError("Unsupported research asset")
     research = ComparisonResearch(root)
     frames = {symbol: research._local(symbol) for symbol in assets}
@@ -386,7 +392,8 @@ def run_study(root: Path, config: StudyConfig, assets: tuple[str, ...] = ASSETS)
     intervals = gate_intervals(config.start, config.end)
     windows = pd.DataFrame([row for symbol, (frame, _) in frames.items()
                             for row in asset_windows(symbol, frame, root=root, config=config,
-                                                     intervals=intervals, snapshots=snapshots)])
+                                                     intervals=intervals, snapshots=snapshots,
+                                                     currency="USD" if dataset_role == "VALIDATION" else None)])
     summary = summarize(windows, config=config)
     quarters = quarter_summary(windows)
     sources = {symbol: {"available_from": str(frame.iloc[0]["date"]),
@@ -399,11 +406,15 @@ def run_study(root: Path, config: StudyConfig, assets: tuple[str, ...] = ASSETS)
                               "raw_sha256": snapshot[1]["raw_sha256"],
                               "series_id": snapshot[1]["series_id"]} if snapshot else None)
                        for key, snapshot in snapshots.items()}
-    manifest = {"study": "TRANSIT_MARKET_V1", "config": asdict(config), "assets": list(assets),
+    manifest = {"study": "TRANSIT_MARKET_V1", "dataset_role": dataset_role,
+                "config": asdict(config), "assets": list(assets),
                 "analysis_code_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
                 "asset_sources": sources, "context_sources": context_sources,
                 "price_phase_rule_hash": RULE_CONFIG_HASH,
                 "transit_source": year_calendar(date.fromisoformat(config.start).year)["provenance"],
                 "window_rows": len(windows), "summary_rows": len(summary)}
+    if dataset_role == "VALIDATION":
+        for symbol, (_, source) in frames.items():
+            manifest["asset_sources"][symbol]["adjustment"] = source.get("adjustment")
     return {"windows": windows, "summary": summary, "quarters": quarters,
             "manifest": manifest}

@@ -1,0 +1,3184 @@
+{
+  "schema_version": "TRANSIT_REGISTRY_V1",
+  "updated_at": "2026-10-24",
+  "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+  "datasets": {
+    "discovery": {
+      "role": "DISCOVERY",
+      "period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "summary_sha256": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659"
+    },
+    "validation": {
+      "role": "VALIDATION",
+      "period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "run_manifest_sha256": "af7fd6b3b90a7405e4fcf3dccebaf23c92b861e30407b9a2b0d8359e5336b10e"
+    }
+  },
+  "frozen_candidate_gates": [
+    1,
+    4,
+    10,
+    20,
+    22,
+    23,
+    27,
+    31,
+    36,
+    44,
+    45,
+    46,
+    47,
+    48,
+    50,
+    51,
+    52,
+    56,
+    57,
+    58,
+    63
+  ],
+  "entries": [
+    {
+      "research_id": "TRANSIT_GATE_32_V1",
+      "gate": 32,
+      "title": "Solar Transit Gate 32 market association",
+      "hypothesis": "No preregistered directional Gate 32 effect; check whether no-evidence persists",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NO_EVIDENCE_CONFIRMED",
+      "evidence_level": "NO EVIDENCE",
+      "result_summary": "All three discovery assets NO EVIDENCE",
+      "counter_evidence": [
+        "Annual return directions differ",
+        "Random percentiles ordinary",
+        "Mean-return bootstrap intervals include zero",
+        "No cross-asset replication"
+      ],
+      "falsification_conditions": [
+        "Ordinary held-out random controls and zero-crossing intervals retain NO EVIDENCE"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "NONE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.7602483546273131,
+          "median_random_effect_pp": 0.7082440297011716,
+          "median_random_return_percentile": 59.85000000000001
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.4205035805508794,
+          "median_random_effect_pp": 0.9638267765065712,
+          "median_random_return_percentile": 68.35
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.1893744794177143,
+          "median_random_effect_pp": -0.256526802697854,
+          "median_random_return_percentile": 43.0
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.711960416796754,
+          "median_random_effect_pp": 1.2975507355115212,
+          "median_random_return_percentile": 68.55000000000001,
+          "mean_return_ci_low": -0.6276512169798557,
+          "mean_return_ci_high": 2.5485411806355667,
+          "phase_control_median_effect_pp": 1.3724449548968345,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.1159328243446,
+          "median_random_effect_pp": -0.2473767062413312,
+          "median_random_return_percentile": 45.1,
+          "mean_return_ci_low": -0.6348784458810062,
+          "mean_return_ci_high": 2.185427838555158,
+          "phase_control_median_effect_pp": -0.4860182570914584,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.8606120231679171,
+          "median_random_effect_pp": 0.3725804158435486,
+          "median_random_return_percentile": 55.10000000000001,
+          "mean_return_ci_low": -4.183099050537559,
+          "mean_return_ci_high": 3.2705937471604147,
+          "phase_control_median_effect_pp": -0.0352535101146411,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "NO_EVIDENCE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NO_EVIDENCE_CONFIRMED",
+          "reason": "All three held-out assets satisfy frozen no-evidence checks",
+          "commit": null
+        }
+      ],
+      "validation_result": "NO_EVIDENCE_CONFIRMED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_01_V1",
+      "gate": 1,
+      "title": "Solar Transit Gate 1 market association",
+      "hypothesis": "STEP 9 weak Gate 1 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on SP500; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "005930: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 1.5612376955959073,
+          "median_random_effect_pp": 0.4609116730707185,
+          "median_random_return_percentile": 58.5
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -0.3650061867437604,
+          "median_random_effect_pp": -0.5298125409507526,
+          "median_random_return_percentile": 41.3
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 1.1345741999750358,
+          "median_random_effect_pp": 0.8355838485569977,
+          "median_random_return_percentile": 75.25
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.6539954013128457,
+          "median_random_effect_pp": 0.2805527077957559,
+          "median_random_return_percentile": 50.4,
+          "mean_return_ci_low": -1.281494801811499,
+          "mean_return_ci_high": 3.4590522728992403,
+          "phase_control_median_effect_pp": 0.3105960849267286,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.23206433893831,
+          "median_random_effect_pp": 1.041093993164055,
+          "median_random_return_percentile": 68.55000000000001,
+          "mean_return_ci_low": -0.9474049750038276,
+          "mean_return_ci_high": 4.121661975258479,
+          "phase_control_median_effect_pp": 0.8637290831534306,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 3.742472008777231,
+          "median_random_effect_pp": 3.5105998574421315,
+          "median_random_return_percentile": 78.9,
+          "mean_return_ci_low": -0.50839815028037,
+          "mean_return_ci_high": 6.50753220227502,
+          "phase_control_median_effect_pp": 2.8606255929004454,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_04_V1",
+      "gate": 4,
+      "title": "Solar Transit Gate 4 market association",
+      "hypothesis": "STEP 9 weak Gate 4 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660, 005930; not confirmed",
+      "counter_evidence": [
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 5,
+          "median_return_pct": 4.0728831725616255,
+          "median_random_effect_pp": 5.5029138160754165,
+          "median_random_return_percentile": 90.7
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 5,
+          "median_return_pct": 0.7032348804500765,
+          "median_random_effect_pp": 1.043969685863244,
+          "median_random_return_percentile": 71.0
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.9713715316684411,
+          "median_random_effect_pp": 0.6644393793265313,
+          "median_random_return_percentile": 78.0
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 2.317855769208954,
+          "median_random_effect_pp": 1.2489094417239333,
+          "median_random_return_percentile": 69.25,
+          "mean_return_ci_low": 0.6108286981476548,
+          "mean_return_ci_high": 3.280250947546337,
+          "phase_control_median_effect_pp": 1.9125704106053296,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.8962055019861526,
+          "median_random_effect_pp": 1.2711823438133985,
+          "median_random_return_percentile": 62.2,
+          "mean_return_ci_low": -0.4758741642627966,
+          "mean_return_ci_high": 2.1706711463768,
+          "phase_control_median_effect_pp": 0.5496022232695574,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 4.372112847099374,
+          "median_random_effect_pp": 3.882227993223064,
+          "median_random_return_percentile": 75.79999999999998,
+          "mean_return_ci_low": 1.6781380727432509,
+          "mean_return_ci_high": 9.008953470291289,
+          "phase_control_median_effect_pp": 3.498216144020572,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_10_V1",
+      "gate": 10,
+      "title": "Solar Transit Gate 10 market association",
+      "hypothesis": "STEP 9 weak Gate 10 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 005930, SP500; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 5,
+          "median_return_pct": 1.379310344827589,
+          "median_random_effect_pp": 1.5004678290682305,
+          "median_random_return_percentile": 56.10000000000001
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 5,
+          "median_return_pct": 2.641509433962264,
+          "median_random_effect_pp": 3.2001686518393635,
+          "median_random_return_percentile": 78.3
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 0.9882633030498522,
+          "median_random_effect_pp": 0.97420944675366,
+          "median_random_return_percentile": 79.75
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.9823618509120176,
+          "median_random_effect_pp": 1.5189509086332489,
+          "median_random_return_percentile": 75.1,
+          "mean_return_ci_low": 0.2896986915580768,
+          "mean_return_ci_high": 3.0653435038120715,
+          "phase_control_median_effect_pp": 1.6136234245043846,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.5827762612310439,
+          "median_random_effect_pp": 0.6417634227277896,
+          "median_random_return_percentile": 58.400000000000006,
+          "mean_return_ci_low": -0.2999522347270125,
+          "mean_return_ci_high": 2.5879022959228286,
+          "phase_control_median_effect_pp": 0.2476048385007256,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 2.086444489659811,
+          "median_random_effect_pp": 2.158088459688684,
+          "median_random_return_percentile": 81.44999999999999,
+          "mean_return_ci_low": -2.041692950556236,
+          "mean_return_ci_high": 5.438996562374384,
+          "phase_control_median_effect_pp": 1.2045980737830253,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_20_V1",
+      "gate": 20,
+      "title": "Solar Transit Gate 20 market association",
+      "hypothesis": "STEP 9 weak Gate 20 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660, 005930; not confirmed",
+      "counter_evidence": [
+        "SP500: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 2.3421913965087304,
+          "median_random_effect_pp": 1.6311048724590216,
+          "median_random_return_percentile": 65.85
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -1.0849319858256157,
+          "median_random_effect_pp": -1.36369089679243,
+          "median_random_return_percentile": 31.550000000000004
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.5411342857872592,
+          "median_random_effect_pp": 0.2184901906122305,
+          "median_random_return_percentile": 61.2
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.5871262874157068,
+          "median_random_effect_pp": 0.1460089889550819,
+          "median_random_return_percentile": 50.85,
+          "mean_return_ci_low": -1.4800205971702312,
+          "mean_return_ci_high": 0.938595349158992,
+          "phase_control_median_effect_pp": 0.2476108255157871,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.5737040690573578,
+          "median_random_effect_pp": 1.0393332557250168,
+          "median_random_return_percentile": 62.650000000000006,
+          "mean_return_ci_low": 0.0714752090235397,
+          "mean_return_ci_high": 2.62561455259216,
+          "phase_control_median_effect_pp": 1.0985327226471608,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 5.007728087838492,
+          "median_random_effect_pp": 5.174305085240174,
+          "median_random_return_percentile": 91.1,
+          "mean_return_ci_low": 0.9120430312711276,
+          "mean_return_ci_high": 15.181765888886185,
+          "phase_control_median_effect_pp": 4.012228077146074,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_22_V1",
+      "gate": 22,
+      "title": "Solar Transit Gate 22 market association",
+      "hypothesis": "STEP 9 weak Gate 22 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 005930; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 1.9030878604722967,
+          "median_random_effect_pp": 1.6569558588336195,
+          "median_random_return_percentile": 62.8
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 1.2495777312343748,
+          "median_random_effect_pp": 1.6209354772846352,
+          "median_random_return_percentile": 77.0
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -1.2898398840567316,
+          "median_random_effect_pp": -1.414653023636908,
+          "median_random_return_percentile": 17.85
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -1.8151049355451363,
+          "median_random_effect_pp": -2.5224671458443257,
+          "median_random_return_percentile": 16.95,
+          "mean_return_ci_low": -4.992525009062958,
+          "mean_return_ci_high": 1.7193348671340185,
+          "phase_control_median_effect_pp": -2.1393141023972664,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -1.486662827399876,
+          "median_random_effect_pp": -1.3254816567654537,
+          "median_random_return_percentile": 33.85,
+          "mean_return_ci_low": -2.076737975517531,
+          "mean_return_ci_high": 1.2452534316580126,
+          "phase_control_median_effect_pp": -1.8567482601467344,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.4874058069702656,
+          "median_random_effect_pp": 2.0105483255070165,
+          "median_random_return_percentile": 55.64999999999999,
+          "mean_return_ci_low": -2.8530537199411783,
+          "mean_return_ci_high": 5.843469667102755,
+          "phase_control_median_effect_pp": 0.7218808476899152,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_23_V1",
+      "gate": 23,
+      "title": "Solar Transit Gate 23 market association",
+      "hypothesis": "STEP 9 weak Gate 23 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on SP500; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "005930: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.8486766398158818,
+          "median_random_effect_pp": 1.4729794144606845,
+          "median_random_return_percentile": 63.0
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -0.95569298180872,
+          "median_random_effect_pp": -1.2393060280088464,
+          "median_random_return_percentile": 25.300000000000004
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 0.4794070939839745,
+          "median_random_effect_pp": 0.2166659520898006,
+          "median_random_return_percentile": 58.3
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.6997357506683066,
+          "median_random_effect_pp": -0.0155973877583259,
+          "median_random_return_percentile": 48.95,
+          "mean_return_ci_low": -1.0039157746735194,
+          "mean_return_ci_high": 3.945698857725329,
+          "phase_control_median_effect_pp": 0.3652144160379844,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.3659838470561727,
+          "median_random_effect_pp": -0.4824461710912442,
+          "median_random_return_percentile": 42.8,
+          "mean_return_ci_low": -0.6119662686825936,
+          "mean_return_ci_high": 1.6525302709902845,
+          "phase_control_median_effect_pp": 0.0237497625125482,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 3.160820209446769,
+          "median_random_effect_pp": 4.186382428724922,
+          "median_random_return_percentile": 72.5,
+          "mean_return_ci_low": 0.7309464711899453,
+          "mean_return_ci_high": 9.808110290215458,
+          "phase_control_median_effect_pp": 2.277858460449156,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_27_V1",
+      "gate": 27,
+      "title": "Solar Transit Gate 27 market association",
+      "hypothesis": "STEP 9 weak Gate 27 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 2.723957999187354,
+          "median_random_effect_pp": 1.496516322095137,
+          "median_random_return_percentile": 62.2
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.6976161922865876,
+          "median_random_effect_pp": 0.3145169451843066,
+          "median_random_return_percentile": 52.6
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.8887656700200641,
+          "median_random_effect_pp": 0.4437618555750644,
+          "median_random_return_percentile": 62.0
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.9746471269784127,
+          "median_random_effect_pp": 1.009576442589677,
+          "median_random_return_percentile": 65.4,
+          "mean_return_ci_low": -1.2942111142918582,
+          "mean_return_ci_high": 2.956088206160972,
+          "phase_control_median_effect_pp": 1.635131665078493,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 2.528395907898251,
+          "median_random_effect_pp": 2.606021699407596,
+          "median_random_return_percentile": 79.75,
+          "mean_return_ci_low": 0.4051736623178814,
+          "mean_return_ci_high": 5.910396997988968,
+          "phase_control_median_effect_pp": 2.188855290994962,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 5.597549639164933,
+          "median_random_effect_pp": 4.702454036257042,
+          "median_random_return_percentile": 85.2,
+          "mean_return_ci_low": 0.1786319480574355,
+          "mean_return_ci_high": 9.12499544962668,
+          "phase_control_median_effect_pp": 4.715703223288148,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_31_V1",
+      "gate": 31,
+      "title": "Solar Transit Gate 31 market association",
+      "hypothesis": "STEP 9 weak Gate 31 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "NEGATIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -1.5199248120300768,
+          "median_random_effect_pp": -1.870271244568289,
+          "median_random_return_percentile": 36.55
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.6186335100275997,
+          "median_random_effect_pp": 0.8756702539710559,
+          "median_random_return_percentile": 65.8
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.2206970380330464,
+          "median_random_effect_pp": -0.1877656425653406,
+          "median_random_return_percentile": 43.35
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.1213269979683906,
+          "median_random_effect_pp": -0.3882369207402758,
+          "median_random_return_percentile": 39.7,
+          "mean_return_ci_low": -1.1066743766816247,
+          "mean_return_ci_high": 3.0984189464576004,
+          "phase_control_median_effect_pp": -0.2489120323518168,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.0875696179475415,
+          "median_random_effect_pp": -0.4464819920164065,
+          "median_random_return_percentile": 43.25,
+          "mean_return_ci_low": -1.8200717363154943,
+          "mean_return_ci_high": 4.064237438888082,
+          "phase_control_median_effect_pp": -0.6158200293462757,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.4630430568802866,
+          "median_random_effect_pp": 0.4827007741223577,
+          "median_random_return_percentile": 55.85,
+          "mean_return_ci_low": -1.3332401733775867,
+          "mean_return_ci_high": 3.647501075712345,
+          "phase_control_median_effect_pp": 0.5811966410035008,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_36_V1",
+      "gate": 36,
+      "title": "Solar Transit Gate 36 market association",
+      "hypothesis": "STEP 9 weak Gate 36 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660, 005930; not confirmed",
+      "counter_evidence": [
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 3.80256816754968,
+          "median_random_effect_pp": 4.031663242005578,
+          "median_random_return_percentile": 82.5
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 2.6215241805146894,
+          "median_random_effect_pp": 3.0049658418970617,
+          "median_random_return_percentile": 87.15
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.8547249425818415,
+          "median_random_effect_pp": 0.4357459170919453,
+          "median_random_return_percentile": 58.3
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.3406535902639738,
+          "median_random_effect_pp": 1.19422840232134,
+          "median_random_return_percentile": 67.85,
+          "mean_return_ci_low": 0.3055192323908755,
+          "mean_return_ci_high": 5.268150575658374,
+          "phase_control_median_effect_pp": 1.062188328030611,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.7856760736549735,
+          "median_random_effect_pp": 1.9527266047697,
+          "median_random_return_percentile": 76.6,
+          "mean_return_ci_low": 0.574055590651464,
+          "mean_return_ci_high": 7.064825072863353,
+          "phase_control_median_effect_pp": 1.4320101331250723,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 2.27733267602106,
+          "median_random_effect_pp": 2.4870683465451515,
+          "median_random_return_percentile": 67.80000000000001,
+          "mean_return_ci_low": -0.691361880388567,
+          "mean_return_ci_high": 14.042961827698416,
+          "phase_control_median_effect_pp": 1.5562562056407492,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_44_V1",
+      "gate": 44,
+      "title": "Solar Transit Gate 44 market association",
+      "hypothesis": "STEP 9 weak Gate 44 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 3.855468078589075,
+          "median_random_effect_pp": 3.548362267226418,
+          "median_random_return_percentile": 77.05
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.2145922746781159,
+          "median_random_effect_pp": 0.3171613973477372,
+          "median_random_return_percentile": 55.35
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.3472593038775728,
+          "median_random_effect_pp": 0.1349555752801434,
+          "median_random_return_percentile": 53.3
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.4207711330744546,
+          "median_random_effect_pp": -0.0104251977646907,
+          "median_random_return_percentile": 44.4,
+          "mean_return_ci_low": -4.669375343860151,
+          "mean_return_ci_high": 3.152776888197437,
+          "phase_control_median_effect_pp": 0.0773718166883374,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.0137349510884787,
+          "median_random_effect_pp": -0.2782830305091577,
+          "median_random_return_percentile": 46.5,
+          "mean_return_ci_low": -3.401796209638825,
+          "mean_return_ci_high": 4.01416125996304,
+          "phase_control_median_effect_pp": -0.5106579986548343,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 7.468606840648473,
+          "median_random_effect_pp": 5.872474160918495,
+          "median_random_return_percentile": 83.75,
+          "mean_return_ci_low": 1.012464936364195,
+          "mean_return_ci_high": 11.07202849636358,
+          "phase_control_median_effect_pp": 6.586760424771687,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_45_V1",
+      "gate": 45,
+      "title": "Solar Transit Gate 45 market association",
+      "hypothesis": "STEP 9 weak Gate 45 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 3.226442889461778,
+          "median_random_effect_pp": 2.88421966345282,
+          "median_random_return_percentile": 64.05
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -1.0669149737713768,
+          "median_random_effect_pp": -1.1294929997648415,
+          "median_random_return_percentile": 31.15
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.575330306695121,
+          "median_random_effect_pp": -0.1074846735300338,
+          "median_random_return_percentile": 46.2
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.0174013962549457,
+          "median_random_effect_pp": -0.4834277533928621,
+          "median_random_return_percentile": 40.15,
+          "mean_return_ci_low": -4.129845100861371,
+          "mean_return_ci_high": 3.600266935542072,
+          "phase_control_median_effect_pp": -0.3528376340652617,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.4510302684478171,
+          "median_random_effect_pp": 0.7073473749682702,
+          "median_random_return_percentile": 63.10000000000001,
+          "mean_return_ci_low": -3.751401162229696,
+          "mean_return_ci_high": 2.710396284156443,
+          "phase_control_median_effect_pp": 1.0973643279179155,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.416128166102515,
+          "median_random_effect_pp": -0.957713867379084,
+          "median_random_return_percentile": 42.7,
+          "mean_return_ci_low": -4.407943452634224,
+          "mean_return_ci_high": 3.917185867490348,
+          "phase_control_median_effect_pp": 0.4206281554100965,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_46_V1",
+      "gate": 46,
+      "title": "Solar Transit Gate 46 market association",
+      "hypothesis": "STEP 9 weak Gate 46 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "NEGATIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -1.9271377189929275,
+          "median_random_effect_pp": -2.8117902113634186,
+          "median_random_return_percentile": 27.3
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -0.2651093162512163,
+          "median_random_effect_pp": -1.0961938876868582,
+          "median_random_return_percentile": 39.7
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 7,
+          "median_return_pct": -0.2741896016587919,
+          "median_random_effect_pp": -0.1045654139274487,
+          "median_random_return_percentile": 45.4
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.3085006975736215,
+          "median_random_effect_pp": -0.6138555158696546,
+          "median_random_return_percentile": 37.8,
+          "mean_return_ci_low": -0.8576916240706972,
+          "mean_return_ci_high": 1.3721098861652188,
+          "phase_control_median_effect_pp": -0.036265443181449,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.6277463984755371,
+          "median_random_effect_pp": 0.2593494589506417,
+          "median_random_return_percentile": 51.4,
+          "mean_return_ci_low": -1.0183467334202227,
+          "mean_return_ci_high": 1.6436907791815194,
+          "phase_control_median_effect_pp": -0.996956742741406,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 2.179586620983676,
+          "median_random_effect_pp": 1.2324334540762203,
+          "median_random_return_percentile": 58.2,
+          "mean_return_ci_low": -3.191669606071477,
+          "mean_return_ci_high": 3.734775118149504,
+          "phase_control_median_effect_pp": 1.2926500155870713,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_47_V1",
+      "gate": 47,
+      "title": "Solar Transit Gate 47 market association",
+      "hypothesis": "STEP 9 weak Gate 47 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 7,
+          "median_return_pct": 3.4928848641655907,
+          "median_random_effect_pp": 2.8460686600221385,
+          "median_random_return_percentile": 77.7
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 7,
+          "median_return_pct": 1.6949152542372836,
+          "median_random_effect_pp": 1.986844289508627,
+          "median_random_return_percentile": 79.5
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 7,
+          "median_return_pct": -0.2145001021429116,
+          "median_random_effect_pp": -0.5159045671570661,
+          "median_random_return_percentile": 48.1
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -1.309015455620843,
+          "median_random_effect_pp": -0.8773052360416145,
+          "median_random_return_percentile": 35.3,
+          "mean_return_ci_low": -2.165129358221892,
+          "mean_return_ci_high": 2.00327473184636,
+          "phase_control_median_effect_pp": -1.6859059055521208,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.854502454136874,
+          "median_random_effect_pp": 0.2929194690012737,
+          "median_random_return_percentile": 58.3,
+          "mean_return_ci_low": -1.785888842400174,
+          "mean_return_ci_high": 3.0612860961254387,
+          "phase_control_median_effect_pp": 0.4861671983519944,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 7,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.8920267949164229,
+          "median_random_effect_pp": 0.47471432135886,
+          "median_random_return_percentile": 52.7,
+          "mean_return_ci_low": -3.912662021335105,
+          "mean_return_ci_high": 5.0320853457259584,
+          "phase_control_median_effect_pp": 0.0012514511536831,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_48_V1",
+      "gate": 48,
+      "title": "Solar Transit Gate 48 market association",
+      "hypothesis": "STEP 9 weak Gate 48 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 5,
+          "median_return_pct": 4.33275563258233,
+          "median_random_effect_pp": 4.413270930488933,
+          "median_random_return_percentile": 89.1
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 5,
+          "median_return_pct": -0.4893964110929905,
+          "median_random_effect_pp": 0.711289695253492,
+          "median_random_return_percentile": 68.30000000000001
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.9288599951331468,
+          "median_random_effect_pp": 0.7036769849650182,
+          "median_random_return_percentile": 64.4
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.7849514279481995,
+          "median_random_effect_pp": 0.8196658054701988,
+          "median_random_return_percentile": 59.75,
+          "mean_return_ci_low": -1.052712126213127,
+          "mean_return_ci_high": 2.2349725010365917,
+          "phase_control_median_effect_pp": 0.4415521115620824,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.681532067063951,
+          "median_random_effect_pp": 1.7668982875179984,
+          "median_random_return_percentile": 79.5,
+          "mean_return_ci_low": -0.9180740832892108,
+          "mean_return_ci_high": 3.4180437486437576,
+          "phase_control_median_effect_pp": 1.3278661265340497,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 5.982557509930897,
+          "median_random_effect_pp": 4.638697336750763,
+          "median_random_return_percentile": 83.79999999999998,
+          "mean_return_ci_low": 0.0216522791100071,
+          "mean_return_ci_high": 6.783075721744706,
+          "phase_control_median_effect_pp": 5.100711094054112,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_50_V1",
+      "gate": 50,
+      "title": "Solar Transit Gate 50 market association",
+      "hypothesis": "STEP 9 weak Gate 50 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660, SP500; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 2.344323760194811,
+          "median_random_effect_pp": 0.8059983565660844,
+          "median_random_return_percentile": 57.5
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -0.503588888343881,
+          "median_random_effect_pp": -1.9075857582985856,
+          "median_random_return_percentile": 26.35
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 0.699446243014501,
+          "median_random_effect_pp": 0.3678311996750505,
+          "median_random_return_percentile": 63.75
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.0870638215284436,
+          "median_random_effect_pp": -0.4053840260704322,
+          "median_random_return_percentile": 41.900000000000006,
+          "mean_return_ci_low": -1.2112710299388336,
+          "mean_return_ci_high": 1.8367999997913644,
+          "phase_control_median_effect_pp": -0.2816746048791896,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.2506512573774886,
+          "median_random_effect_pp": 0.9994204318247156,
+          "median_random_return_percentile": 67.9,
+          "mean_return_ci_low": 0.7666027446210075,
+          "mean_return_ci_high": 2.907128864095517,
+          "phase_control_median_effect_pp": 0.9111106404741998,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.9690338311810551,
+          "median_random_effect_pp": 1.9664019094954852,
+          "median_random_return_percentile": 66.05000000000001,
+          "mean_return_ci_low": 0.0542999720444119,
+          "mean_return_ci_high": 4.005227201437278,
+          "phase_control_median_effect_pp": 1.0860720821834424,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_51_V1",
+      "gate": 51,
+      "title": "Solar Transit Gate 51 market association",
+      "hypothesis": "STEP 9 weak Gate 51 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on SP500; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "005930: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 3.632553243219472,
+          "median_random_effect_pp": 3.346184400149599,
+          "median_random_return_percentile": 64.75
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.875906325527126,
+          "median_random_effect_pp": 0.699435737291837,
+          "median_random_return_percentile": 52.9
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 1.233039418385251,
+          "median_random_effect_pp": 0.8082803412760797,
+          "median_random_return_percentile": 78.95
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.5665876613109133,
+          "median_random_effect_pp": -0.101146202700042,
+          "median_random_return_percentile": 51.85,
+          "mean_return_ci_low": -1.0885876323318389,
+          "mean_return_ci_high": 3.921452540141253,
+          "phase_control_median_effect_pp": 0.2270721994109936,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.893097098846197,
+          "median_random_effect_pp": 1.2521403757657978,
+          "median_random_return_percentile": 78.25,
+          "mean_return_ci_low": -1.2282946015112035,
+          "mean_return_ci_high": 5.017024848390632,
+          "phase_control_median_effect_pp": 1.5394311583162956,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 2.772843450211216,
+          "median_random_effect_pp": 2.3187238175873204,
+          "median_random_return_percentile": 67.35,
+          "mean_return_ci_low": -4.074633943161417,
+          "mean_return_ci_high": 11.528074166093084,
+          "phase_control_median_effect_pp": 1.8909970343344296,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_52_V1",
+      "gate": 52,
+      "title": "Solar Transit Gate 52 market association",
+      "hypothesis": "STEP 9 weak Gate 52 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 005930; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "NEGATIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.3597936200483431,
+          "median_random_effect_pp": -0.1438693836146587,
+          "median_random_return_percentile": 48.45
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -1.7749616159677573,
+          "median_random_effect_pp": -2.277702276387128,
+          "median_random_return_percentile": 20.65
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 1.121927534831524,
+          "median_random_effect_pp": 0.6928929066902123,
+          "median_random_return_percentile": 72.85000000000001
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 2.341689770080136,
+          "median_random_effect_pp": 2.029195363551361,
+          "median_random_return_percentile": 89.04999999999998,
+          "mean_return_ci_low": -0.4932168281897797,
+          "mean_return_ci_high": 4.145430894491878,
+          "phase_control_median_effect_pp": 1.9955568049561112,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.6314239254967555,
+          "median_random_effect_pp": 0.9115672768548522,
+          "median_random_return_percentile": 67.7,
+          "mean_return_ci_low": -0.7661250839746373,
+          "mean_return_ci_high": 3.677801628513509,
+          "phase_control_median_effect_pp": 1.1379389136607188,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 2.3035729950173334,
+          "median_random_effect_pp": 1.515335535814566,
+          "median_random_return_percentile": 65.6,
+          "mean_return_ci_low": -4.157252133884129,
+          "mean_return_ci_high": 3.8124061850813775,
+          "phase_control_median_effect_pp": 1.308072984324915,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_56_V1",
+      "gate": 56,
+      "title": "Solar Transit Gate 56 market association",
+      "hypothesis": "STEP 9 weak Gate 56 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9",
+        "Discovery weak effects disagree in sign or fall below 1 pp"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "AMBIGUOUS",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -0.4487475181003175,
+          "median_random_effect_pp": -0.0301887285019397,
+          "median_random_return_percentile": 47.65
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -0.232661793546085,
+          "median_random_effect_pp": -0.0062908182298315,
+          "median_random_return_percentile": 45.6
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.417312038046469,
+          "median_random_effect_pp": 0.0260949329970894,
+          "median_random_return_percentile": 49.7
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 1.6876055028166803,
+          "median_random_effect_pp": 0.9294317423350518,
+          "median_random_return_percentile": 63.45,
+          "mean_return_ci_low": 0.1286467708511929,
+          "mean_return_ci_high": 2.7810750235664043,
+          "phase_control_median_effect_pp": 1.3414725376926562,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.2498611840032527,
+          "median_random_effect_pp": -0.5282873048227499,
+          "median_random_return_percentile": 36.7,
+          "mean_return_ci_low": -2.787443645797832,
+          "mean_return_ci_high": 2.0400023331967,
+          "phase_control_median_effect_pp": -0.7623406030437208,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 1.495012954814212,
+          "median_random_effect_pp": 1.2904394138608777,
+          "median_random_return_percentile": 55.75,
+          "mean_return_ci_low": -1.9261998056652407,
+          "mean_return_ci_high": 2.556496692713917,
+          "phase_control_median_effect_pp": 0.6120512058165994,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Discovery direction was ambiguous before validation",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_57_V1",
+      "gate": 57,
+      "title": "Solar Transit Gate 57 market association",
+      "hypothesis": "STEP 9 weak Gate 57 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 5,
+          "median_return_pct": 4.494382022471921,
+          "median_random_effect_pp": 5.069829592804398,
+          "median_random_return_percentile": 85.0
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 5,
+          "median_return_pct": -0.3610108303249149,
+          "median_random_effect_pp": 0.290454967720688,
+          "median_random_return_percentile": 53.1
+        },
+        {
+          "asset": "SP500",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.4646687132143112,
+          "median_random_effect_pp": 0.4062511303652649,
+          "median_random_return_percentile": 59.25
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.3550980571565054,
+          "median_random_effect_pp": -0.2108859880738445,
+          "median_random_return_percentile": 57.05,
+          "mean_return_ci_low": -1.811263048680735,
+          "mean_return_ci_high": 4.132508117333113,
+          "phase_control_median_effect_pp": 0.0116987407703883,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": 0.4416955279987422,
+          "median_random_effect_pp": 0.4191340118586628,
+          "median_random_return_percentile": 56.45,
+          "mean_return_ci_low": -0.7325263304326395,
+          "mean_return_ci_high": 2.890962058817459,
+          "phase_control_median_effect_pp": 0.0880295874688408,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": 0.9778694227411956,
+          "median_random_effect_pp": 0.7367976308646329,
+          "median_random_return_percentile": 54.25,
+          "mean_return_ci_low": 0.3251282119893006,
+          "mean_return_ci_high": 2.1220746873366134,
+          "phase_control_median_effect_pp": 0.0858426278247725,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    },
+    {
+      "research_id": "TRANSIT_GATE_58_V1",
+      "gate": 58,
+      "title": "Solar Transit Gate 58 market association",
+      "hypothesis": "STEP 9 weak Gate 58 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "INSUFFICIENT_SAMPLE",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 000660; not confirmed",
+      "counter_evidence": [
+        "005930: NO EVIDENCE in STEP 9",
+        "SP500: INSUFFICIENT SAMPLE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "POSITIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": 2.415691304580192,
+          "median_random_effect_pp": 1.8347830153385811,
+          "median_random_return_percentile": 74.25
+        },
+        {
+          "asset": "005930",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": 0.8661819109580249,
+          "median_random_effect_pp": 0.825876250497326,
+          "median_random_return_percentile": 51.65
+        },
+        {
+          "asset": "SP500",
+          "status": "INSUFFICIENT SAMPLE",
+          "count_windows": 4,
+          "median_return_pct": -0.1815513485381281,
+          "median_random_effect_pp": -0.3420543536817422,
+          "median_random_return_percentile": 35.35
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 4,
+          "research_status": "INSUFFICIENT SAMPLE",
+          "median_return_pct": -0.1932048915267992,
+          "median_random_effect_pp": -0.2304284683060431,
+          "median_random_return_percentile": 44.05,
+          "mean_return_ci_low": -0.9151397421845732,
+          "mean_return_ci_high": -0.0969786645023118,
+          "phase_control_median_effect_pp": -0.6238525535015804,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 4,
+          "research_status": "INSUFFICIENT SAMPLE",
+          "median_return_pct": 0.1605900435924068,
+          "median_random_effect_pp": 0.124103294721295,
+          "median_random_return_percentile": 52.14999999999999,
+          "mean_return_ci_low": -0.5934187640738886,
+          "mean_return_ci_high": 0.8934274456068508,
+          "phase_control_median_effect_pp": -0.2094953891544515,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 4,
+          "research_status": "INSUFFICIENT SAMPLE",
+          "median_return_pct": -0.5380994198577904,
+          "median_random_effect_pp": -0.915268511830286,
+          "median_random_return_percentile": 37.0,
+          "mean_return_ci_low": -3.170467509718802,
+          "mean_return_ci_high": 2.226113337675703,
+          "phase_control_median_effect_pp": -1.437803691506484,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "INSUFFICIENT_SAMPLE",
+          "reason": "One or more held-out assets lack required windows or random controls",
+          "commit": null
+        }
+      ],
+      "validation_result": "INSUFFICIENT_SAMPLE"
+    },
+    {
+      "research_id": "TRANSIT_GATE_63_V1",
+      "gate": 63,
+      "title": "Solar Transit Gate 63 market association",
+      "hypothesis": "STEP 9 weak Gate 63 association may persist on held-out US assets",
+      "domain": "TRANSIT_MARKET_ASSOCIATION",
+      "discovery_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "discovery_assets": [
+        "005930",
+        "000660",
+        "SP500"
+      ],
+      "discovery_dataset_version": "4bc47f15587540b710f044068e1354c32b5f54c3a770f5c9d5f047c240709659",
+      "method_version": "TRANSIT_MARKET_V1",
+      "status": "NOT_REPLICATED",
+      "evidence_level": "WEAK",
+      "result_summary": "WEAK on 005930, SP500; not confirmed",
+      "counter_evidence": [
+        "000660: NO EVIDENCE in STEP 9"
+      ],
+      "falsification_conditions": [
+        "Direction reversal on at least two held-out assets with all frozen controls",
+        "Ordinary or mixed held-out results mean NOT_REPLICATED"
+      ],
+      "candidate_variables": [
+        "Gate",
+        "close-to-close return",
+        "within-window MDD",
+        "daily volatility",
+        "same-season random percentile",
+        "FECM Phase",
+        "as-of macro context"
+      ],
+      "validation_plan": "docs/research/transit-validation-v1-plan.md",
+      "validation_assets": [
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "validation_period": {
+        "start": "2020-08-24",
+        "end": "2026-10-02"
+      },
+      "frozen_direction": "NEGATIVE",
+      "discovery_evidence": [
+        {
+          "asset": "000660",
+          "status": "NO EVIDENCE",
+          "count_windows": 6,
+          "median_return_pct": -1.879803125809515,
+          "median_random_effect_pp": -3.030116249408621,
+          "median_random_return_percentile": 19.55
+        },
+        {
+          "asset": "005930",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -2.012889298178877,
+          "median_random_effect_pp": -1.83902426794656,
+          "median_random_return_percentile": 17.25
+        },
+        {
+          "asset": "SP500",
+          "status": "WEAK",
+          "count_windows": 6,
+          "median_return_pct": -1.4246860264213237,
+          "median_random_effect_pp": -1.45410364144668,
+          "median_random_return_percentile": 24.5
+        }
+      ],
+      "validation_evidence": [
+        {
+          "asset": "AAPL",
+          "count_windows": 6,
+          "research_status": "WEAK",
+          "median_return_pct": -2.3889131661761933,
+          "median_random_effect_pp": -2.7741733539235147,
+          "median_random_return_percentile": 18.6,
+          "mean_return_ci_low": -4.413432495777189,
+          "mean_return_ci_high": 1.2370717023756714,
+          "phase_control_median_effect_pp": -2.7673199187580657,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "MSFT",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -0.0457546988018475,
+          "median_random_effect_pp": -0.8797660724686129,
+          "median_random_return_percentile": 39.3,
+          "mean_return_ci_low": -2.378469841488412,
+          "mean_return_ci_high": 1.5980777989242985,
+          "phase_control_median_effect_pp": -0.4140899545867271,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        },
+        {
+          "asset": "NVDA",
+          "count_windows": 6,
+          "research_status": "NO EVIDENCE",
+          "median_return_pct": -2.8067447521303635,
+          "median_random_effect_pp": -3.4054442416829867,
+          "median_random_return_percentile": 32.2,
+          "mean_return_ci_low": -6.11094416160473,
+          "mean_return_ci_high": 2.771014570018991,
+          "phase_control_median_effect_pp": -3.578107863910862,
+          "supports_frozen_direction": false,
+          "strong_opposite_direction": false
+        }
+      ],
+      "created_at": "2026-10-24",
+      "updated_at": "2026-10-24",
+      "source_commit": "1750c5695258f697a1c838a9c6b15b73270dea3f",
+      "validation_commit": null,
+      "notes": "Exploratory association only; future independent-time validation required; historical asset-held-out only, no forward evidence",
+      "status_history": [
+        {
+          "date": "2026-10-24",
+          "status": "WEAK_CANDIDATE",
+          "reason": "Frozen from approved STEP 9 discovery result",
+          "commit": "1750c5695258f697a1c838a9c6b15b73270dea3f"
+        },
+        {
+          "date": "2026-10-24",
+          "status": "VALIDATING",
+          "reason": "Held-out asset result evaluated",
+          "commit": null
+        },
+        {
+          "date": "2026-10-24",
+          "status": "NOT_REPLICATED",
+          "reason": "Frozen replication threshold not met",
+          "commit": null
+        }
+      ],
+      "validation_result": "NOT_REPLICATED"
+    }
+  ]
+}

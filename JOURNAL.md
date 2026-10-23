@@ -909,3 +909,29 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   제목/부제 및 플롯 표시를 확인했다.
   사용자 화면·보고서 검토 전 commit/push하지 않았고, 2026-10-24에 연구결과의
   독립 Research Checkpoint commit/push 승인을 받았다. STEP 10은 시작하지 않는다.
+
+## 2026-10-24 — STEP 10 Research Registry · 독립 자산 Validation v1
+
+- 최상위 `ZERO_MARKET_LAB_META.md`와 STEP 9 체크포인트를 확인했다. STEP 9의
+  삼성전자·SK하이닉스·S&P 500, 2020-08-24~2026-10-02 결과를 `DISCOVERY`로
+  동결하고, 결과 조회 전 Gate 32와 `WEAK`가 한 번이라도 나온 21개 Gate를
+  Registry에 등록했다. Gate 20의 상충 방향과 작은 효과도 제거하지 않았다.
+- `docs/research/transit-validation-v1-plan.md`에 NVDA·MSFT·AAPL, 같은 기간,
+  seed 1042, 기존 Return/MDD/Volatility·Random/Bootstrap/Pre/Post·FECM Phase·Macro
+  기준과 승격/반증/표본부족 판정 규칙을 사전등록했다. 독립 자산 검증이며 시기
+  독립 검증이나 Forward 검증은 아니다.
+- STEP 9 파이프라인을 공용화한 뒤 기존 Discovery 네 결과 파일의 바이트 단위
+  동일성을 확인했다. Validation 두 번 실행의 manifest와 Window Parquet/CSV,
+  66행 요약 CSV도 각각 동일했다. 원시·파생자료는 Git 제외 경로에 둔다.
+- Gate 32는 독립 세 자산 모두 `NO EVIDENCE`, Random percentile은 평범하고
+  평균 수익률 Bootstrap 구간은 0을 포함해 `NO_EVIDENCE_CONFIRMED`로 기록했다.
+  약한 후보 21개 중 20개는 `NOT_REPLICATED`, Gate 58은 4개 연간 Window로
+  `INSUFFICIENT_SAMPLE`이다. `REPLICATION_CANDIDATE`와 `FALSIFIED`는 0개다.
+  세부 반증·표본·해시는 `docs/research/transit-validation-v1.md`에 보존한다.
+- Registry는 Discovery/Validation 증거와 상태 이력을 분리 보존한다. 이 결과로
+  Gate 기반 전략 또는 Paper Trading 규칙을 만들지 않는다. 사용자 검토 전
+  commit/push하지 않으며 STEP 11도 시작하지 않는다.
+- 전체 Python 331개 PASS, 기존 JS 9개 PASS, Browser 회귀 21 Checkpoint PASS
+  (Console/Network/Unhandled 0/0/0), `pip check`와 `git diff --check` PASS.
+  첫 제한 환경에서 일부 Python setup과 Chrome 기동이 권한 오류였으며,
+  허용된 실행 환경에서 전체 회귀를 재실행해 기능 실패 없이 통과했다.
