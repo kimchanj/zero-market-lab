@@ -1,0 +1,11 @@
+# Forward Validation v1 — architecture and staged delivery
+
+The parent architecture requires historical → rolling/walk-forward → Paper → forward evidence without lookahead. STEP 11 records research evidence only. The [preregistration](transit-forward-validation-v1-plan.md) freezes the cutoff, candidate IDs, six-asset universe, eligibility and minimum sample before prospective observations are read.
+
+The STEP 9/10 Registry remains the source of frozen hypotheses and historical evidence. A separate `forward_validation` section per entry holds its own status and append-only event references; it never rewrites Discovery or independent-asset Validation outcomes. Forward observations and event log belong in ignored runtime storage, not in Git or the Registry's large JSON. The Registry should retain only counts, latest window, summary and hashes. Repeated runs must preserve prior records; corrections append a new event linked to the earlier record.
+
+The stages are: (1) pin protocol and initialize empty Registry state; (2) accept only new post-freeze, post-cutoff observations with provenance and mutation detection; (3) detect OPEN/CLOSED Gate windows; (4) wait for Post, matured random control and macro context; (5) calculate the unchanged metrics and append evidence with a stable key/hash; (6) assess provisional or mature status without creating a trading rule. The runner defaults to dry-run until the ingestion and lifecycle tests pass.
+
+**Current implementation boundary:** protocol and empty forward state are prepared and full Python/JS/browser regression has passed. Ingestion, append-only runtime store, window finalization, correction workflow and Browser evidence UI remain STEP 11.1 follow-up work. Existing local bars through 2026-10-07 were collected before this protocol and cannot be relabeled as forward evidence. `WAITING_FOR_DATA` with zero completed windows is intentional.
+
+The eligibility guard also freezes each asset's latest **already stored** observation date, as amended in the plan before any Forward evidence was accepted. A fresh provider download of the same historical date still fails eligibility even if its `collected_at` is after preregistration. The current snapshot maximum is 2026-10-08 for the two Korean stocks, 2026-10-07 for NVDA/MSFT/AAPL and 2026-10-02 for SP500.

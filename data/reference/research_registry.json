@@ -195,7 +195,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NO_EVIDENCE_CONFIRMED"
+      "validation_result": "NO_EVIDENCE_CONFIRMED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_01_V1",
@@ -338,7 +349,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_04_V1",
@@ -479,7 +501,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_10_V1",
@@ -621,7 +654,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_20_V1",
@@ -763,7 +807,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_22_V1",
@@ -905,7 +960,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_23_V1",
@@ -1048,7 +1114,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_27_V1",
@@ -1190,7 +1267,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_31_V1",
@@ -1332,7 +1420,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_36_V1",
@@ -1473,7 +1572,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_44_V1",
@@ -1615,7 +1725,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_45_V1",
@@ -1757,7 +1878,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_46_V1",
@@ -1899,7 +2031,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_47_V1",
@@ -2041,7 +2184,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_48_V1",
@@ -2183,7 +2337,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_50_V1",
@@ -2325,7 +2490,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_51_V1",
@@ -2468,7 +2644,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_52_V1",
@@ -2610,7 +2797,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_56_V1",
@@ -2753,7 +2951,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_57_V1",
@@ -2895,7 +3104,18 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_58_V1",
@@ -3037,7 +3257,18 @@
           "commit": null
         }
       ],
-      "validation_result": "INSUFFICIENT_SAMPLE"
+      "validation_result": "INSUFFICIENT_SAMPLE",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     },
     {
       "research_id": "TRANSIT_GATE_63_V1",
@@ -3178,7 +3409,66 @@
           "commit": null
         }
       ],
-      "validation_result": "NOT_REPLICATED"
+      "validation_result": "NOT_REPLICATED",
+      "forward_validation": {
+        "status": "WAITING_FOR_DATA",
+        "preregistration_id": "TRANSIT_FORWARD_V1",
+        "cutoff_date": "2026-10-02",
+        "started_at": "2026-10-23T15:32:48Z",
+        "windows_completed": 0,
+        "latest_window_end": null,
+        "evidence": [],
+        "events": [],
+        "result_summary": "No eligible prospective window yet"
+      }
     }
-  ]
+  ],
+  "forward_protocol": {
+    "protocol_id": "TRANSIT_FORWARD_V1",
+    "historical_cutoff": "2026-10-02",
+    "frozen_at": "2026-10-23T15:32:48Z",
+    "source_commit": "a83d52cc02b26312dfb0ef6adddd75a9e775e1e3",
+    "preregistration": "docs/research/transit-forward-validation-v1-plan.md",
+    "preregistration_sha256": "cc66b92d061a26db897739ae8e6eda22e13752be6a48b73a8474f6704574db17",
+    "assets": [
+      "005930",
+      "000660",
+      "SP500",
+      "NVDA",
+      "MSFT",
+      "AAPL"
+    ],
+    "research_ids": [
+      "TRANSIT_GATE_32_V1",
+      "TRANSIT_GATE_01_V1",
+      "TRANSIT_GATE_04_V1",
+      "TRANSIT_GATE_10_V1",
+      "TRANSIT_GATE_20_V1",
+      "TRANSIT_GATE_22_V1",
+      "TRANSIT_GATE_23_V1",
+      "TRANSIT_GATE_27_V1",
+      "TRANSIT_GATE_31_V1",
+      "TRANSIT_GATE_36_V1",
+      "TRANSIT_GATE_44_V1",
+      "TRANSIT_GATE_45_V1",
+      "TRANSIT_GATE_46_V1",
+      "TRANSIT_GATE_47_V1",
+      "TRANSIT_GATE_48_V1",
+      "TRANSIT_GATE_50_V1",
+      "TRANSIT_GATE_51_V1",
+      "TRANSIT_GATE_52_V1",
+      "TRANSIT_GATE_56_V1",
+      "TRANSIT_GATE_57_V1",
+      "TRANSIT_GATE_58_V1",
+      "TRANSIT_GATE_63_V1"
+    ],
+    "preexisting_max_observation_date": {
+      "005930": "2026-10-08",
+      "000660": "2026-10-08",
+      "SP500": "2026-10-02",
+      "NVDA": "2026-10-07",
+      "MSFT": "2026-10-07",
+      "AAPL": "2026-10-07"
+    }
+  }
 }

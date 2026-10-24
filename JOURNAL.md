@@ -935,3 +935,35 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   (Console/Network/Unhandled 0/0/0), `pip check`와 `git diff --check` PASS.
   첫 제한 환경에서 일부 Python setup과 Chrome 기동이 권한 오류였으며,
   허용된 실행 환경에서 전체 회귀를 재실행해 기능 실패 없이 통과했다.
+
+## 2026-10-24 — STEP 11 Forward Validation v1 · Foundation 검증 완료
+
+- `ZERO_MARKET_LAB_META.md`를 우선 확인하고 STEP 9/10 연구 계획·결과·Registry와
+  현재 Git clean 기준선 `a83d52cc02b26312dfb0ef6adddd75a9e775e1e3`을 검토했다.
+  기존 연구 결과와 충돌은 확인되지 않았다.
+- Historical cutoff를 2026-10-02로 고정하고, STEP 10에 이미 저장된 2026-10-07까지의
+  시세를 새 Forward 증거로 오인하지 않도록 `observation_date > cutoff`와
+  `collected_at > protocol freeze`를 함께 요구하는 v1 계획을 결과 조회 전에 기록했다.
+- Registry의 22개 기존 가설에 독립 Forward 상태를 추가했다. 모두
+  `WAITING_FOR_DATA`, 완료 Window 0건이며 과거 Discovery·Validation 증거는
+  변경하지 않았다. CLI `--dry-run`은 이 상태만 검증·출력하고 데이터를 처리하지 않는다.
+- Forward 경계·출처·clock·Registry 불변식 테스트 3개와 기존 Registry 테스트 7개가
+  통과했다. 실제 관측 수집, append-only event store, Window finalization,
+  late macro/random control, correction flow, UI는 아직 구현하지 않았다.
+  이어받기 목록은 `docs/research/STEP11_RESUME.md`에 기록했다.
+- 사용자 검토 전 commit/push하지 않는다. STEP 12 및 Gate 기반 매매전략은 시작하지 않는다.
+- 전체 Python 334개, JS 9개, Browser 회귀 21 Checkpoint PASS
+  (Console/Network/Unhandled 0/0/0). `pip check`, `git diff --check` PASS.
+  STEP 9 Discovery 요약과 STEP 10 Validation manifest/요약 해시는 기존 값과 일치했다.
+- 이어받기 검토에서 Registry 22개 항목 모두 `WAITING_FOR_DATA`·Forward Window 0건을
+  재확인했다. CLI dry-run 전후 Registry SHA-256은 동일했고 비 dry-run 실행은 거부됐다.
+  기존 STEP 10 Registry에서 Forward 필드만 제거하면 원본과 정확히 같다.
+  Python 334개, JS 9개, Browser 21 Checkpoint와 오류 0/0/0을 다시 확인했다.
+  이 범위의 STEP 11 Foundation은 완료로 판정한다. 실제 수집·append-only 증거·
+  Window lifecycle은 미구현이며 사용자 검토 후 별도 STEP 11.1로 진행한다.
+- 최종 안전 점검에서 `collected_at`만 새로 찍어 기존 2026-10-03~07 시세를 재수집하면
+  Forward로 오인할 수 있는 빈틈을 발견했다. Forward 증거 0건 상태에서
+  `2026-10-24T02:53:53Z` 사전등록 안전 보완을 명시하고, 종목별 기존 Snapshot
+  마지막 관측일보다 **엄격히 이후**인 날짜만 허용하도록 경계를 강화했다.
+  삼성전자·SK하이닉스는 2026-10-08, 미국 3종목은 2026-10-07,
+  SP500은 2026-10-02를 기존 최대일로 고정했다. 같은 날짜 재수집도 거부한다.
