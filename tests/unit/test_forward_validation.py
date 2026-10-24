@@ -51,6 +51,8 @@ def test_provenance_and_clock_fail_closed():
     now = datetime(2026, 10, 24, tzinfo=timezone.utc)
     with pytest.raises(ValueError, match="Future collection"):
         eligible_observation(_observation(collected_at="2026-10-25T00:00:00Z"), now=now)
+    with pytest.raises(ValueError, match="market close"):
+        eligible_observation(_observation(observation_date="2026-10-24"), now=now)
     with pytest.raises(ValueError, match="SHA-256"):
         eligible_observation(_observation(source_hash="missing"), now=now)
     with pytest.raises(ValueError, match="universe"):

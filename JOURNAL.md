@@ -967,3 +967,55 @@ commit하고 origin/main에 push한다. 성공 hash는 별도 STEP 4 종료 기�
   마지막 관측일보다 **엄격히 이후**인 날짜만 허용하도록 경계를 강화했다.
   삼성전자·SK하이닉스는 2026-10-08, 미국 3종목은 2026-10-07,
   SP500은 2026-10-02를 기존 최대일로 고정했다. 같은 날짜 재수집도 거부한다.
+
+## 2026-10-24 — STEP 11.1 Forward Observation & Evidence Lifecycle · 사용자 검토 대기
+
+- STEP 11 Foundation 체크포인트 `ef798579e93d5ddb5881465076bd1054e896915c`와
+  최상위 META·사전등록 계획을 확인했다. STEP 9/10 Discovery·Validation 결과는 변경하지 않았다.
+- 기존 여섯 자산 공급자 파서와 FRED Context provider를 재사용해 명시적 `--ingest`,
+  `--finalize`, 읽기 전용 기본/`--dry-run` 모드를 구현했다. 종가 전에 수집된 미래
+  일봉을 거부한다. Observation/Event/Evidence는 Git 제외 SQLite에 append-only로
+  저장한다. 동일 수집은 no-op, 원천 변경은 `SOURCE_MUTATION`으로 차단하고
+  명시적 이유가 있는 정정 이벤트 후에만 수정된 revision을 사용할 수 있다.
+- Gate Window는 `WAITING_FOR_DATA → OPEN → CLOSED → PENDING_CONTROL` 또는
+  `PENDING_CONTEXT → FINALIZED`로 진행한다. Pre/Post 동일 길이, 같은 해 ±45일
+  Random 1,000회, 기존 Return/MDD/Volatility, as-of Macro, Gate.Line·Quarter,
+  가능한 자산의 PRICE_PHASE_V1을 사용한다. 완료 전 부분 수익률은 Evidence로 쓰지 않는다.
+  Window key와 input/result hash, supersession을 기록한다. 이후 시장 관측이
+  늘어도 기존 Evidence의 평가 시점을 고정한다.
+- 2026-10-24 실제 공급자 호출에서 005930 10건, 000660 10건, SP500 13건,
+  NVDA/MSFT/AAPL 각 11건, 총 **66건**을 로컬 런타임에 저장했다. 모두
+  사전등록 후 수집됐지만 시장 관측일은 2026-10-05~23으로 사전등록일 이전이다.
+  동결된 세 경계에는 적격이나 완전한 사전등록 이후 Gate Window의 시장 증거는
+  아직 아니다. `window_start > frozen_at`을 별도로 강제한다.
+  동일 호출 반복은 66건 모두 DUPLICATE였고 SOURCE_MUTATION은 0건이다.
+  원본 응답 바이트 보존 기능을 추가한 뒤 재수집해 국내 2종목과 SP500의 최초
+  SHA-256 원본은 회복했으나, 미국 3종목 최초 33행의 응답 바이트는 재수집 시
+  달라져 회복하지 못했다. 해당 행은 정규화값·최초 원본 해시만 보유한다.
+  현재 Gate 시작이 사전등록 시각보다 이르므로 OPEN/PENDING/FINALIZED Window는
+  모두 **0건**, Evidence **0건**이다. Git Registry의 22개 항목은 모두
+  `WAITING_FOR_DATA`를 유지한다.
+- 합성 데이터로 eligibility·중복·원천 변경·정정·OPEN·PENDING_CONTROL·
+  PENDING_CONTEXT·FINALIZED·재실행 멱등성·Evidence supersession을 검증했다.
+  전체 Python 337개, JS 9개, Browser 21 checkpoints가 통과했고 브라우저
+  Console/Network/Unhandled는 0/0/0이다. `pip check`와 공백 검사도 통과했다.
+- 실제 완성 Window가 없으므로 성과 해석이나 전략 승격은 없다. 다음 관측이
+  쌓인 뒤 공급자 캘린더 누락·Macro 시점·Phase 품질을 검토해야 한다. 사용자
+  화면 검토 전 commit/push하지 않으며 STEP 12는 시작하지 않는다.
+
+## 2026-10-24 — STEP 11.1 Checkpoint 승인 및 최종 감사
+
+- 사용자가 STEP 11.1을 검토하고 `research: add forward evidence lifecycle` 메시지로
+  commit 및 origin/main push를 승인했다. 기준선은
+  `ef798579e93d5ddb5881465076bd1054e896915c`이며 추가 기능은 구현하지 않는다.
+- 코드·테스트·문서 9개만 체크포인트 대상으로 확인했다. SQLite·관측·이벤트·
+  Evidence·다운로드 응답·생성 요약은 기존 Git 제외 정책을 유지한다.
+- 수집 자료는 66건이다. 수집 경계 helper는 이 과거일 보충 자료를 수용하지만,
+  사전등록 이후 시장 관측과 Forward Evidence로 인정할 관측은 0건이다.
+  OPEN/PENDING/FINALIZED Window, Evidence, Mutation 및 Correction은 모두 0건이다.
+- 실제 DB를 읽기 전용으로 감사하고, 메모리 SQLite에서 동일 수집·정정을 반복해
+  중복이 없음을 확인했다. 실제 CLI dry-run 및 finalize 두 번 실행 전후 DB와
+  Registry SHA-256도 동일했다. STEP 9 Discovery와 STEP 10 Validation 해시,
+  Foundation의 22개 WAITING_FOR_DATA 상태를 보존했다. STEP 12는 시작하지 않는다.
+- 체크포인트 최종 회귀: Python 337개, JS 9개, Browser 21 Checkpoint PASS.
+  Console/Network/Unhandled는 0/0/0이며 pip check 및 git diff --check도 PASS.

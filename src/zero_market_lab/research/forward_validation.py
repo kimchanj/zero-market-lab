@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 
 from zero_market_lab.research.registry import discovery_fingerprint, validate_registry
+from zero_market_lab.transit.calendar import at_market_close
 
 
 PROTOCOL_ID = "TRANSIT_FORWARD_V1"
@@ -43,6 +44,10 @@ def eligible_observation(observation: dict, *, now: datetime) -> bool:
     collected = _instant(observation["collected_at"])
     if collected > now.astimezone(timezone.utc):
         raise ValueError("Future collection timestamp")
+    market = "KRW" if observation["symbol"] in {"005930", "000660"} else "USD"
+    close = _instant(at_market_close(observed.isoformat(), market)["market_close_utc"])
+    if collected < close:
+        raise ValueError("Observation collected before its market close")
     return (observed > date.fromisoformat(CUTOFF) and
             observed > date.fromisoformat(PREEXISTING_MAX_DATE[observation["symbol"]]) and
             collected > _instant(FROZEN_AT))

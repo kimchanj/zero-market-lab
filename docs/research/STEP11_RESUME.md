@@ -1,4 +1,6 @@
-# STEP 11 handoff — Foundation verified; STEP 11.1 remains
+# STEP 11 handoff — Foundation checkpoint and STEP 11.1 follow-up
+
+**Current status (2026-10-24):** STEP 11.1 observation ingestion and lifecycle code passed user review; commit and push are authorized for this checkpoint. Collected backfill observations: 66; post-preregistration market observations: 0; finalized forward windows/evidence: 0. The collection guard accepts the 66 backfill rows, while the full-window-after-freeze boundary excludes them from prospective Gate evidence. See `forward-evidence-lifecycle.md` and the latest `JOURNAL.md` entry. The Foundation notes below describe the earlier checkpoint; their "not implemented" statements are historical. STEP 12 is not started or authorized by this checkpoint.
 
 Read `ZERO_MARKET_LAB_META.md`, `transit-forward-validation-v1-plan.md` and `forward-validation-architecture.md` first. Preserve the uncommitted working tree. The approved STEP 10 checkpoint is `a83d52cc02b26312dfb0ef6adddd75a9e775e1e3`. Do not amend its discovery/validation evidence. No commit or push before user review.
 
